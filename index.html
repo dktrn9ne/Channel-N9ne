@@ -30,7 +30,7 @@
       margin-bottom: 40px;
     }
 
-    /* Livestream + Chat Container */
+    /* Layout for stream + chat */
     .stream-wrapper {
       display: flex;
       flex-direction: row;
@@ -40,20 +40,16 @@
       max-width: 1400px;
     }
 
-    /* Livestream Player */
+    /* Mux player */
     .mux-player-container {
       flex: 3;
       aspect-ratio: 16/9;
       border-radius: 10px;
       overflow: hidden;
     }
+    mux-player { width: 100%; height: 100%; }
 
-    mux-player {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Chat Section */
+    /* Chat panel */
     #chat {
       flex: 1.2;
       display: flex;
@@ -63,6 +59,17 @@
       background: rgba(0,0,0,0.45);
       padding: 10px;
       max-height: 80vh;
+    }
+
+    #chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+      margin-bottom: 5px;
+      color: #00bfff;
     }
 
     #chat-box {
@@ -88,37 +95,22 @@
       padding: 8px;
     }
 
-    input {
-      flex: 1;
-      background: #111;
-      color: #fff;
-    }
-
+    input { flex: 1; background: #111; color: #fff; }
     button {
       background: #00bfff;
       color: #000;
       font-weight: bold;
       cursor: pointer;
     }
-
     button:hover { background: #00ffff; }
 
-    /* Responsive: stack vertically on mobile */
     @media (max-width: 900px) {
-      .stream-wrapper {
-        flex-direction: column;
-        align-items: center;
-      }
-      #chat {
-        width: 100%;
-        max-height: 400px;
-      }
+      .stream-wrapper { flex-direction: column; align-items: center; }
+      #chat { width: 100%; max-height: 400px; }
     }
   </style>
 
-  <!-- Mux Player -->
   <script src="https://unpkg.com/@mux/mux-player"></script>
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -126,7 +118,6 @@
   <div id="content">
     <img src="channel9.png" alt="Channel N9NE Logo"/>
 
-    <!-- STREAM + CHAT SIDE BY SIDE -->
     <div class="stream-wrapper">
       <div class="mux-player-container">
         <mux-player
@@ -139,8 +130,11 @@
         </mux-player>
       </div>
 
-      <!-- 💬 Chat -->
       <div id="chat">
+        <div id="chat-header">
+          <span>💬 Chat is Live</span>
+          <span id="viewer-count">0 watching</span>
+        </div>
         <div id="chat-box"></div>
         <div id="chat-inputs">
           <input id="username" placeholder="Name" />
@@ -151,17 +145,17 @@
     </div>
   </div>
 
-  <!-- Supabase Chat Logic -->
   <script>
     const { createClient } = supabase;
-    const supabaseUrl = 'https://kidmxnxkhyhaehzexatm.supabase.co';   // Replace
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U';                         // Replace
+    const supabaseUrl = 'https://kidmxnxkhyhaehzexatm.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U';
     const db = createClient(supabaseUrl, supabaseKey);
 
     const chatBox = document.getElementById('chat-box');
     const usernameInput = document.getElementById('username');
     const msgInput = document.getElementById('msg');
     const sendBtn = document.getElementById('send');
+    const viewerCount = document.getElementById('viewer-count');
 
     function formatTime(iso) {
       const date = new Date(iso);
@@ -191,3 +185,38 @@
     sendBtn.onclick = async () => {
       const username = usernameInput.value.trim() || 'Anon';
       const text = msgInput.value.trim();
+      if (!text) return;
+      const { data, error } = await db.from('messages').insert([{ username, text }]).select();
+      if (error) {
+        console.error('Insert error:', error.message);
+        alert('Message not sent. Check Supabase policy or anon key.');
+        return;
+      }
+      addMessage(data[0]);
+      msgInput.value = '';
+    };
+
+    db.channel('public:messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
+        payload => addMessage(payload.new))
+      .subscribe();
+
+    loadMessages();
+
+    /* simple live viewer count using localStorage */
+    const VIEWERS_KEY = 'channelN9NEViewers';
+    function updateViewers() {
+      const now = Date.now();
+      localStorage.setItem(VIEWERS_KEY, now);
+      let count = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k.startsWith(VIEWERS_KEY) && now - localStorage.getItem(k) < 30000) count++;
+      }
+      viewerCount.textContent = `${count} watching`;
+    }
+    updateViewers();
+    setInterval(updateViewers, 10000);
+  </script>
+</body>
+</html>
