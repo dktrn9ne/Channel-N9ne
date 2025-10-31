@@ -145,6 +145,7 @@
     </div>
   </div>
 
+  <!-- ✅ Fixed Supabase Chat Script -->
   <script>
     const { createClient } = supabase;
     const supabaseUrl = 'https://kidmxnxkhyhaehzexatm.supabase.co';
@@ -156,6 +157,8 @@
     const msgInput = document.getElementById('msg');
     const sendBtn = document.getElementById('send');
     const viewerCount = document.getElementById('viewer-count');
+
+    const clientId = crypto.randomUUID(); // unique per browser session
 
     function formatTime(iso) {
       const date = new Date(iso);
@@ -186,33 +189,34 @@
       const username = usernameInput.value.trim() || 'Anon';
       const text = msgInput.value.trim();
       if (!text) return;
-      const { data, error } = await db.from('messages').insert([{ username, text }]).select();
+      const { error } = await db.from('messages').insert([{ username, text, client_id: clientId }]);
       if (error) {
         console.error('Insert error:', error.message);
         alert('Message not sent. Check Supabase policy or anon key.');
-        return;
       }
-      addMessage(data[0]);
       msgInput.value = '';
     };
 
+    // Realtime subscription with duplicate protection
     db.channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
-        payload => addMessage(payload.new))
+        payload => {
+          if (payload.new.client_id !== clientId) addMessage(payload.new);
+        })
       .subscribe();
 
     loadMessages();
 
-    /* simple live viewer count using localStorage */
+    /* Lightweight viewer count */
     const VIEWERS_KEY = 'channelN9NEViewers';
     function updateViewers() {
       const now = Date.now();
-      localStorage.setItem(VIEWERS_KEY, now);
+      localStorage.setItem(VIEWERS_KEY + clientId, now);
       let count = 0;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
+      const keys = Object.keys(localStorage);
+      keys.forEach(k => {
         if (k.startsWith(VIEWERS_KEY) && now - localStorage.getItem(k) < 30000) count++;
-      }
+      });
       viewerCount.textContent = `${count} watching`;
     }
     updateViewers();
