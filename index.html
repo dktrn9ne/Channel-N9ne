@@ -3,29 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Starry Background with Logo + Livestream</title>
+  <title>Channel N9NE Live</title>
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-      overflow-x: hidden;
+      color: #fff;
       font-family: 'Arial', sans-serif;
-    }
-
-    .star-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
+      overflow-x: hidden;
     }
 
     #content {
@@ -50,84 +38,174 @@
       width: 80%;
       max-width: 960px;
       aspect-ratio: 16 / 9;
-      position: relative;
-      z-index: 10;
-    }
-
-    mux-player {
-      width: 100%;
-      height: 100%;
       border-radius: 10px;
       overflow: hidden;
     }
+
+    /* CHAT STYLES */
+    #chat {
+      width: 80%;
+      max-width: 960px;
+      margin-top: 25px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.4);
+      padding: 10px;
+    }
+
+    #chat-box {
+      height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    .msg {
+      margin-bottom: 6px;
+      word-wrap: break-word;
+    }
+
+    .user {
+      color: #00ffff;
+      font-weight: bold;
+    }
+
+    #chat-inputs {
+      display: flex;
+      margin-top: 8px;
+      gap: 8px;
+    }
+
+    input, button {
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+    }
+
+    input {
+      flex: 1;
+      background: #111;
+      color: #fff;
+    }
+
+    button {
+      background: #00bfff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00ffff;
+    }
   </style>
 
-  <!-- Mux Player library -->
+  <!-- Mux Player -->
   <script src="https://unpkg.com/@mux/mux-player"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <!-- STAR LAYERS -->
-  <div class="star-layer" id="layer1"></div>
-  <div class="star-layer" id="layer2"></div>
-  <div class="star-layer" id="layer3"></div>
-
-  <!-- MAIN CONTENT -->
   <div id="content">
-    <!-- Replace this URL with your GitHub-hosted logo image -->
-    <img src="channel9.png" alt="9 Logo" />
+    <img src="channel9.png" alt="Channel N9NE Logo"/>
 
-    <!-- ✅ MUX Livestream Player -->
     <div class="mux-player-container">
       <mux-player
         stream-type="live"
         playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
         primary-color="#00bfff"
         metadata-video-title="Live Stream"
-        metadata-viewer-user-id="viewer-001"
         autoplay
-        muted
-      ></mux-player>
+        muted>
+      </mux-player>
+    </div>
+
+    <!-- 💬 Chat Section -->
+    <div id="chat">
+      <div id="chat-box"></div>
+      <div id="chat-inputs">
+        <input id="username" placeholder="Name" />
+        <input id="msg" placeholder="Say something..." />
+        <button id="send">Send</button>
+      </div>
     </div>
   </div>
 
-  <!-- Stars Script -->
+  <!-- STAR BACKGROUND (unchanged) -->
   <script>
-    const layers = [
-      { id: 'layer1', count: 40, size: 1, speed: 0.3 },
-      { id: 'layer2', count: 30, size: 2, speed: 0.2 },
-      { id: 'layer3', count: 20, size: 3, speed: 0.1 }
-    ];
-
-    layers.forEach(layer => {
-      const container = document.getElementById(layer.id);
-      for (let i = 0; i < layer.count; i++) {
-        const star = document.createElement('div');
+    const layers=[{id:'layer1',count:40,size:1,speed:0.3},{id:'layer2',count:30,size:2,speed:0.2},{id:'layer3',count:20,size:3,speed:0.1}];
+    layers.forEach(layer=>{
+      const container=document.createElement('div');
+      container.classList.add('star-layer');
+      container.id=layer.id;
+      document.body.appendChild(container);
+      for(let i=0;i<layer.count;i++){
+        const star=document.createElement('div');
         star.classList.add('star');
-        star.style.width = `${layer.size}px`;
-        star.style.height = `${layer.size}px`;
-
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        star.style.left = `${x}vw`;
-        star.style.top = `${y}vh`;
-
-        const duration = (Math.random() * 10 + 10) / layer.speed;
-        const delay = Math.random() * 20;
-
-        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
-
+        star.style.width=`${layer.size}px`;
+        star.style.height=`${layer.size}px`;
+        star.style.left=`${Math.random()*100}vw`;
+        star.style.top=`${Math.random()*100}vh`;
+        star.style.background='white';
+        star.style.borderRadius='50%';
+        const duration=(Math.random()*10+10)/layer.speed;
+        const delay=Math.random()*20;
+        star.style.animation=`fall ${duration}s linear ${delay}s infinite`;
         container.appendChild(star);
       }
     });
-
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(100vh); opacity: 0.3; }
-      }
-    `;
+    const style=document.createElement('style');
+    style.innerHTML=`@keyframes fall{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(100vh);opacity:0.3;}}`;
     document.head.appendChild(style);
+  </script>
+
+  <!-- 💬 Supabase Chat Logic -->
+  <script>
+    const { createClient } = supabase;
+    const supabaseUrl = 'https://kidmxnxkhyhaehzexatm.supabase.co';   // ← Replace
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U';                         // ← Replace
+    const db = createClient(supabaseUrl, supabaseKey);
+
+    const chatBox = document.getElementById('chat-box');
+    const usernameInput = document.getElementById('username');
+    const msgInput = document.getElementById('msg');
+    const sendBtn = document.getElementById('send');
+
+    // Load existing messages
+    async function loadMessages() {
+      const { data, error } = await db
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!error) data.forEach(addMessage);
+    }
+
+    // Display message in chat box
+    function addMessage(msg) {
+      const div = document.createElement('div');
+      div.classList.add('msg');
+      div.innerHTML = `<span class="user">${msg.username}:</span> ${msg.text}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Send new message
+    sendBtn.onclick = async () => {
+      const username = usernameInput.value.trim() || 'Anon';
+      const text = msgInput.value.trim();
+      if (!text) return;
+      await db.from('messages').insert([{ username, text }]);
+      msgInput.value = '';
+    };
+
+    // Listen for new realtime messages
+    db.channel('messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
+        payload => addMessage(payload.new))
+      .subscribe();
+
+    loadMessages();
   </script>
 </body>
 </html>
