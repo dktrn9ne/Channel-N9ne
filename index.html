@@ -16,7 +16,25 @@
       overflow-x: hidden;
     }
 
+    /* ✨ Starfield Layers */
+    .star-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+    }
+
     #content {
+      position: relative;
+      z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -110,11 +128,17 @@
     }
   </style>
 
+  <!-- Mux Player + Supabase -->
   <script src="https://unpkg.com/@mux/mux-player"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
+  <!-- 🌠 Star Layers -->
+  <div class="star-layer" id="layer1"></div>
+  <div class="star-layer" id="layer2"></div>
+  <div class="star-layer" id="layer3"></div>
+
   <div id="content">
     <img src="channel9.png" alt="Channel N9NE Logo"/>
 
@@ -145,7 +169,41 @@
     </div>
   </div>
 
-  <!-- ✅ Fixed Supabase Chat Script -->
+  <!-- ✨ Falling Stars Script -->
+  <script>
+    const layers = [
+      { id: 'layer1', count: 40, size: 1, speed: 0.3 },
+      { id: 'layer2', count: 30, size: 2, speed: 0.2 },
+      { id: 'layer3', count: 20, size: 3, speed: 0.1 }
+    ];
+
+    layers.forEach(layer => {
+      const container = document.getElementById(layer.id);
+      for (let i = 0; i < layer.count; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        star.style.width = `${layer.size}px`;
+        star.style.height = `${layer.size}px`;
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`;
+        const duration = (Math.random() * 10 + 10) / layer.speed;
+        const delay = Math.random() * 20;
+        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+        container.appendChild(star);
+      }
+    });
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes fall {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(100vh); opacity: 0.3; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+
+  <!-- 💬 Supabase Chat Script -->
   <script>
     const { createClient } = supabase;
     const supabaseUrl = 'https://kidmxnxkhyhaehzexatm.supabase.co';
@@ -157,8 +215,7 @@
     const msgInput = document.getElementById('msg');
     const sendBtn = document.getElementById('send');
     const viewerCount = document.getElementById('viewer-count');
-
-    const clientId = crypto.randomUUID(); // unique per browser session
+    const clientId = crypto.randomUUID();
 
     function formatTime(iso) {
       const date = new Date(iso);
@@ -190,19 +247,13 @@
       const text = msgInput.value.trim();
       if (!text) return;
       const { error } = await db.from('messages').insert([{ username, text, client_id: clientId }]);
-      if (error) {
-        console.error('Insert error:', error.message);
-        alert('Message not sent. Check Supabase policy or anon key.');
-      }
+      if (error) console.error('Insert error:', error.message);
       msgInput.value = '';
     };
 
-    // Realtime subscription with duplicate protection
     db.channel('public:messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
-        payload => {
-          if (payload.new.client_id !== clientId) addMessage(payload.new);
-        })
+        payload => { if (payload.new.client_id !== clientId) addMessage(payload.new); })
       .subscribe();
 
     loadMessages();
@@ -213,8 +264,7 @@
       const now = Date.now();
       localStorage.setItem(VIEWERS_KEY + clientId, now);
       let count = 0;
-      const keys = Object.keys(localStorage);
-      keys.forEach(k => {
+      Object.keys(localStorage).forEach(k => {
         if (k.startsWith(VIEWERS_KEY) && now - localStorage.getItem(k) < 30000) count++;
       });
       viewerCount.textContent = `${count} watching`;
