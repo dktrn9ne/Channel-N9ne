@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dynamic Starry Background</title>
+  <title>Starry Background with Logo</title>
   <style>
     html, body {
       margin: 0;
@@ -18,6 +18,7 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
+      z-index: 1;
       pointer-events: none;
     }
 
@@ -37,17 +38,19 @@
     }
 
     #content img {
-      width: 750px;         /* 3× the original 250px */
-      max-width: 90vw;      /* Responsive fallback */
+      width: 750px;
+      max-width: 90vw;
       height: auto;
     }
   </style>
 </head>
 <body>
+  <!-- STAR LAYERS -->
   <div class="star-layer" id="layer1"></div>
   <div class="star-layer" id="layer2"></div>
   <div class="star-layer" id="layer3"></div>
 
+  <!-- LOGO CONTENT -->
   <div id="content">
     <img src="channel9.png" alt="9 Logo" />
   </div>
@@ -63,4 +66,32 @@
       const container = document.getElementById(layer.id);
       for (let i = 0; i < layer.count; i++) {
         const star = document.createElement('div');
-        star.classList.add('sta
+        star.classList.add('star');
+        star.style.width = `${layer.size}px`;
+        star.style.height = `${layer.size}px`;
+
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        star.style.left = `${x}vw`;
+        star.style.top = `${y}vh`;
+
+        const duration = (Math.random() * 10 + 10) / layer.speed;
+        const delay = Math.random() * 20;
+
+        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+
+        container.appendChild(star);
+      }
+    });
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes fall {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(100vh); opacity: 0.3; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
