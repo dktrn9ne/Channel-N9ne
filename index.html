@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Starry Background with Logo</title>
+  <title>Starry Background with Logo + Livestream</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-      overflow: hidden;
+      overflow-x: hidden;
       font-family: 'Arial', sans-serif;
     }
 
@@ -32,17 +32,36 @@
       position: relative;
       z-index: 10;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      justify-content: flex-start;
+      padding-top: 5vh;
+      min-height: 100vh;
     }
 
     #content img {
       width: 750px;
       max-width: 90vw;
       height: auto;
+      margin-bottom: 40px;
+    }
+
+    .mux-player-container {
+      width: 80%;
+      max-width: 960px;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      z-index: 10;
+    }
+
+    mux-player {
+      width: 100%;
+      height: 100%;
     }
   </style>
+
+  <!-- Mux Player library (Web Component) -->
+  <script src="https://unpkg.com/@mux/mux-player"></script>
 </head>
 <body>
   <!-- STAR LAYERS -->
@@ -50,11 +69,25 @@
   <div class="star-layer" id="layer2"></div>
   <div class="star-layer" id="layer3"></div>
 
-  <!-- LOGO CONTENT -->
+  <!-- MAIN CONTENT -->
   <div id="content">
     <img src="channel9.png" alt="9 Logo" />
+
+    <!-- MUX Livestream Player -->
+    <div class="mux-player-container">
+      <mux-player
+        stream-type="live"
+        playback-id="911eaa7e-d37a-4547-af16-0195ad5ce5cf"
+        primary-color="#00bfff"
+        metadata-video-title="Live Stream"
+        metadata-viewer-user-id="user-123"
+        autoplay
+        muted
+      ></mux-player>
+    </div>
   </div>
 
+  <!-- Stars Script -->
   <script>
     const layers = [
       { id: 'layer1', count: 40, size: 1, speed: 0.3 },
