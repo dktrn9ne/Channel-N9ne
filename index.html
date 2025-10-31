@@ -37,8 +37,8 @@
     }
 
     #content img {
-      max-width: 250px;
-      width: 100%;
+      width: 750px;         /* 3× the original 250px */
+      max-width: 90vw;      /* Responsive fallback */
       height: auto;
     }
   </style>
@@ -63,35 +63,4 @@
       const container = document.getElementById(layer.id);
       for (let i = 0; i < layer.count; i++) {
         const star = document.createElement('div');
-        star.classList.add('star');
-        star.style.width = `${layer.size}px`;
-        star.style.height = `${layer.size}px`;
-
-        // Random position
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        star.style.left = `${x}vw`;
-        star.style.top = `${y}vh`;
-
-        // Random animation speed/duration and delay
-        const duration = (Math.random() * 10 + 10) / layer.speed;
-        const delay = Math.random() * 20;
-
-        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
-
-        container.appendChild(star);
-      }
-    });
-
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(100vh); opacity: 0.3; }
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
-</body>
-</html>
-
+        star.classList.add('sta
