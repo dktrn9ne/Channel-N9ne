@@ -16,17 +16,15 @@
       overflow-x: hidden;
     }
 
-    /* Give page scrollable height */
     body {
-      min-height: 150vh; /* allows scroll below stream */
+      min-height: 150vh;
     }
 
     /* ✨ Starfield Layers */
     .star-layer {
       position: fixed;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       pointer-events: none;
       z-index: 1;
     }
@@ -44,7 +42,7 @@
       flex-direction: column;
       align-items: center;
       padding-top: 5vh;
-      padding-bottom: 200px; /* space below stream */
+      padding-bottom: 200px;
       min-height: 100vh;
     }
 
@@ -74,18 +72,18 @@
     }
     mux-player { width: 100%; height: 100%; }
 
-    /* 🎯 Centered Subscribe Button under stream */
+    /* 🎯 Bottom-right Subscribe Button */
     #n9ne-button {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
+      position: absolute;
+      bottom: -40px;   /* sits just below player */
+      right: 10px;     /* near right edge of stream */
       perspective: 800px;
-      text-align: center;
+      z-index: 15;
     }
 
     #n9ne-button img {
       width: 70px;
-      transform: rotateX(15deg) rotateY(0deg) translateZ(0);
+      transform: rotateX(15deg);
       transition: all 0.3s ease;
       filter: drop-shadow(0 0 4px rgba(0, 191, 255, 0.5));
     }
@@ -159,6 +157,10 @@
     @media (max-width: 900px) {
       .stream-wrapper { flex-direction: column; align-items: center; }
       #chat { width: 100%; max-height: 400px; }
+      #n9ne-button {
+        position: static;
+        margin-top: 10px;
+      }
     }
   </style>
 
@@ -186,7 +188,7 @@
           muted>
         </mux-player>
 
-        <!-- 🎯 Small centered Subscribe Button below stream -->
+        <!-- 🚀 Subscribe Button (bottom-right of stream) -->
         <div id="n9ne-button">
           <a href="https://yourlink.com" target="_blank">
             <img src="sub.png" alt="Subscribe" class="live" />
