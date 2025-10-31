@@ -30,17 +30,16 @@
     #content {
       position: relative;
       z-index: 10;
-      text-align: center;
-      color: white;
-      padding-top: 20vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
-    h1 {
-      font-size: 3em;
-    }
-
-    p {
-      font-size: 1.2em;
+    #content img {
+      max-width: 250px;
+      width: 100%;
+      height: auto;
     }
   </style>
 </head>
@@ -50,8 +49,7 @@
   <div class="star-layer" id="layer3"></div>
 
   <div id="content">
-    <h1>Welcome to the Galaxy</h1>
-    <p>Stars now drift with random speed and start scattered across the sky 🌌</p>
+    <img src="https://github.com/dktrn9ne/Channel-N9ne/blob/main/channel9.png" alt="9 Logo" />
   </div>
 
   <script>
@@ -76,7 +74,7 @@
         star.style.top = `${y}vh`;
 
         // Random animation speed/duration and delay
-        const duration = (Math.random() * 10 + 10) / layer.speed; // longer duration = slower
+        const duration = (Math.random() * 10 + 10) / layer.speed;
         const delay = Math.random() * 20;
 
         star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
@@ -85,7 +83,6 @@
       }
     });
 
-    // Add CSS keyframes via JS
     const style = document.createElement('style');
     style.innerHTML = `
       @keyframes fall {
@@ -97,3 +94,4 @@
   </script>
 </body>
 </html>
+
