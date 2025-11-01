@@ -46,6 +46,7 @@ body { min-height: 150vh; position: relative; }
 }
 .stream-column {
   flex: 3; display: flex; flex-direction: column; align-items: flex-end;
+  position: relative;
 }
 .mux-player-container {
   width: 100%; aspect-ratio: 16/9;
@@ -54,20 +55,28 @@ body { min-height: 150vh; position: relative; }
 }
 mux-player { width: 100%; height: 100%; }
 
-/* 🎯 Responsive icon buttons */
+/* 🎯 Right-side button bar */
 .button-row {
-  display: flex; flex-direction: row; justify-content: flex-end; align-items: center;
-  gap: 10px; margin-top: 12px; margin-right: 12px; perspective: 800px;
+  position: absolute;
+  right: 0; bottom: -60px; /* below player */
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  perspective: 800px;
 }
 .n9ne-btn img {
-  width: 24px; height: 24px; object-fit: contain;
+  width: 48px; height: 48px;  /* doubled size */
+  object-fit: contain;
   transform: rotateX(12deg);
   transition: all .25s ease;
   filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
   opacity: .95;
 }
 .n9ne-btn img:hover {
-  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.3);
+  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
   filter: drop-shadow(0 0 8px rgba(0,255,255,1));
   opacity: 1;
 }
@@ -76,12 +85,13 @@ mux-player { width: 100%; height: 100%; }
   50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
 }
 .n9ne-btn img.live{animation:pulseGlow 2.5s infinite;}
+
 @media (max-width:900px){
-  .n9ne-btn img{width:30px;height:30px;}
-  .button-row{justify-content:center;margin-right:0;}
+  .n9ne-btn img{width:56px;height:56px;}
+  .button-row{bottom:-70px;right:50%;transform:translateX(50%);}
 }
 @media (max-width:600px){
-  .n9ne-btn img{width:36px;height:36px;}
+  .n9ne-btn img{width:64px;height:64px;}
 }
 
 /* Chat */
@@ -142,7 +152,7 @@ button:hover { background:#00ffff; }
         </mux-player>
       </div>
 
-      <!-- 🚀 Icon Buttons -->
+      <!-- 🚀 Right-side Buttons -->
       <div class="button-row">
         <a href="https://venmo.com/yourusername" target="_blank" class="n9ne-btn">
           <img src="venmo.png" alt="Venmo" class="live" />
