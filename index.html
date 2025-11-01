@@ -13,82 +13,54 @@ html,body{
 }
 body{min-height:150vh;position:relative;}
 
-/* ✨ Star layers — now visible */
+/* ✨ Star layers */
 .star-layer{
-  position:fixed;
-  top:0;left:0;width:100%;height:100%;
-  pointer-events:none;
-  z-index:0;
-  overflow:hidden;
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;overflow:hidden;
 }
 .star{
-  position:absolute;
-  background:white;
-  border-radius:50%;
-  opacity:0.9;
-  box-shadow:0 0 6px 2px rgba(255,255,255,0.8);
+  position:absolute;background:white;border-radius:50%;
+  opacity:0.9;box-shadow:0 0 6px 2px rgba(255,255,255,0.8);
 }
 
+/* Main content */
 #content{
-  position:relative;
-  z-index:10;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding-top:5vh;
-  padding-bottom:200px;
-  min-height:100vh;
+  position:relative;z-index:10;display:flex;flex-direction:column;
+  align-items:center;padding-top:5vh;padding-bottom:200px;min-height:100vh;
 }
+#content img{width:750px;max-width:90vw;margin-bottom:40px;}
 
-#content img{
-  width:750px;
-  max-width:90vw;
-  margin-bottom:40px;
-}
-
-/* Layout */
 .stream-wrapper{
+  display:flex;flex-direction:row;justify-content:center;gap:20px;
+  width:90%;max-width:1400px;
+}
+.stream-column{
+  flex:3;display:flex;flex-direction:column;align-items:flex-end;
+}
+.mux-player-container{
+  width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;
+  background:rgba(0,0,0,0.3);
+}
+mux-player{width:100%;height:100%;}
+
+/* 🎯 Button row under stream */
+.button-row{
   display:flex;
   flex-direction:row;
-  justify-content:center;
-  gap:20px;
-  width:90%;
-  max-width:1400px;
-}
-
-.stream-column{
-  flex:3;
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-}
-
-.mux-player-container{
-  width:100%;
-  aspect-ratio:16/9;
-  border-radius:10px;
-  overflow:hidden;
-  background:rgba(0,0,0,0.3); /* transparent for stars */
-}
-mux-player{
-  width:100%;
-  height:100%;
-}
-
-/* 🎯 Subscribe button */
-#n9ne-button{
+  justify-content:flex-end;
+  gap:10px;
   margin-top:8px;
   margin-right:8px;
   perspective:800px;
-  text-align:right;
 }
-#n9ne-button img{
+
+.n9ne-btn img{
   width:70px;
   transform:rotateX(15deg);
   transition:all .3s ease;
   filter:drop-shadow(0 0 4px rgba(0,191,255,.5));
 }
-#n9ne-button:hover img{
+.n9ne-btn img:hover{
   transform:rotateX(0deg) rotateY(10deg) translateZ(10px) scale(1.1);
   filter:drop-shadow(0 0 12px rgba(0,255,255,.9));
 }
@@ -96,34 +68,21 @@ mux-player{
   0%,100%{filter:drop-shadow(0 0 4px rgba(0,255,255,.6));}
   50%{filter:drop-shadow(0 0 12px rgba(0,255,255,1));}
 }
-#n9ne-button img.live{animation:pulseGlow 2s infinite;}
+.n9ne-btn img.live{animation:pulseGlow 2s infinite;}
 
 /* Chat */
 #chat{
-  flex:1.2;
-  display:flex;
-  flex-direction:column;
-  border:1px solid #333;
-  border-radius:10px;
-  background:rgba(0,0,0,0.3); /* more transparent for stars */
-  padding:10px;
-  max-height:80vh;
+  flex:1.2;display:flex;flex-direction:column;
+  border:1px solid #333;border-radius:10px;
+  background:rgba(0,0,0,0.3);padding:10px;max-height:80vh;
 }
 #chat-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-weight:bold;
-  border-bottom:1px solid #333;
-  padding-bottom:5px;
-  margin-bottom:5px;
-  color:#00bfff;
+  display:flex;justify-content:space-between;align-items:center;
+  font-weight:bold;border-bottom:1px solid #333;
+  padding-bottom:5px;margin-bottom:5px;color:#00bfff;
 }
 #chat-box{
-  flex:1;
-  overflow-y:auto;
-  padding:10px;
-  border-bottom:1px solid #333;
+  flex:1;overflow-y:auto;padding:10px;border-bottom:1px solid #333;
 }
 .msg{margin-bottom:6px;line-height:1.4;}
 .user{color:#00ffff;font-weight:bold;}
@@ -137,7 +96,7 @@ button:hover{background:#00ffff;}
   .stream-wrapper{flex-direction:column;align-items:center;}
   #chat{width:100%;max-height:400px;}
   .stream-column{align-items:center;}
-  #n9ne-button{text-align:center;margin-right:0;}
+  .button-row{justify-content:center;margin-right:0;}
 }
 </style>
 
@@ -165,10 +124,13 @@ button:hover{background:#00ffff;}
         </mux-player>
       </div>
 
-      <!-- 🚀 Subscribe button -->
-      <div id="n9ne-button">
-        <a href="https://yourlink.com" target="_blank">
-          <img src="sub.png" alt="Subscribe" class="live"/>
+      <!-- 🚀 Button Row (Venmo + Subscribe) -->
+      <div class="button-row">
+        <a href="https://venmo.com/yourusername" target="_blank" class="n9ne-btn">
+          <img src="venmo.png" alt="Venmo" class="live" />
+        </a>
+        <a href="https://yourlink.com" target="_blank" class="n9ne-btn">
+          <img src="sub.png" alt="Subscribe" class="live" />
         </a>
       </div>
     </div>
@@ -189,7 +151,7 @@ button:hover{background:#00ffff;}
   </div>
 </div>
 
-<!-- ✨ Falling stars -->
+<!-- ✨ Falling Stars -->
 <script>
 const layers=[
  {id:'layer1',count:40,size:1,speed:.3},
@@ -214,7 +176,7 @@ layers.forEach(l=>{
 const style=document.createElement('style');
 style.innerHTML=`@keyframes fall{
  0%{transform:translateY(0);opacity:1;}
- 100%{transform:translateY(100vh);opacity:0.3;}
+ 100%{transform:translateY(100vh);opacity:.3;}
 }`;
 document.head.appendChild(style);
 </script>
@@ -253,3 +215,25 @@ sendBtn.onclick=async()=>{
   const text=msgInput.value.trim();
   if(!text)return;
   await db.from('messages').insert([{username,text,client_id:clientId}]);
+  msgInput.value='';
+};
+db.channel('public:messages')
+ .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},
+  p=>{if(p.new.client_id!==clientId)addMessage(p.new);})
+ .subscribe();
+loadMessages();
+/* lightweight viewer count */
+const VIEWERS_KEY='channelN9NEViewers';
+function updateViewers(){
+ const now=Date.now();
+ localStorage.setItem(VIEWERS_KEY+clientId,now);
+ let count=0;
+ Object.keys(localStorage).forEach(k=>{
+   if(k.startsWith(VIEWERS_KEY)&&now-localStorage.getItem(k)<30000)count++;
+ });
+ viewerCount.textContent=`${count} watching`;
+}
+updateViewers();setInterval(updateViewers,10000);
+</script>
+</body>
+</html>
