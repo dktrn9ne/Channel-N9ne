@@ -1,89 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Channel N9NE Live</title>
-<style>
-html,body{
-  margin:0;padding:0;height:100%;
-  background:radial-gradient(ellipse at bottom,#1B2735 0%,#090A0F 100%);
-  color:#fff;font-family:Arial,Helvetica,sans-serif;
-  overflow-x:hidden;
-}
-body{min-height:150vh;position:relative;}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Channel N9NE Live</title>
 
-/* ✨ Star layers */
-.star-layer{
-  position:fixed;top:0;left:0;width:100%;height:100%;
-  pointer-events:none;z-index:0;overflow:hidden;
-}
-.star{
-  position:absolute;background:white;border-radius:50%;
-  opacity:0.9;box-shadow:0 0 6px 2px rgba(255,255,255,0.8);
-}
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow-x: hidden;
+    }
 
-/* Content layout */
-#content{
-  position:relative;z-index:10;display:flex;flex-direction:column;
-  align-items:center;padding-top:5vh;padding-bottom:200px;min-height:100vh;
-}
-#content img{width:750px;max-width:90vw;margin-bottom:40px;}
+    body {
+      min-height: 150vh;
+      position: relative;
+    }
 
-.stream-wrapper{
-  display:flex;flex-direction:row;justify-content:center;gap:20px;
-  width:90%;max-width:1400px;
-}
-.stream-column{
-  flex:3;display:flex;flex-direction:column;align-items:flex-end;
-}
-.mux-player-container{
-  width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;
-  background:rgba(0,0,0,0.3);
-}
-mux-player{width:100%;height:100%;}
+    /* ⭐ star background */
+    .star-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.9;
+      box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8);
+    }
 
-/* 🎯 Small button row under stream */
-.button-row{
-  display:flex;
-  flex-direction:row;
-  justify-content:flex-end;
-  gap:6px;
-  margin-top:10px;
-  margin-right:8px;
-  perspective:800px;
-}
-.n9ne-btn img{
-  width:22px; /* smaller buttons */
-  transform:rotateX(15deg);
-  transition:all .3s ease;
-  filter:drop-shadow(0 0 2px rgba(0,191,255,.5));
-}
-.n9ne-btn img:hover{
-  transform:rotateX(0deg) rotateY(10deg) translateZ(6px) scale(1.2);
-  filter:drop-shadow(0 0 8px rgba(0,255,255,.9));
-}
-@keyframes pulseGlow{
-  0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));}
-  50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
-}
-.n9ne-btn img.live{animation:pulseGlow 2s infinite;}
+    /* main content */
+    #content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 5vh;
+      padding-bottom: 200px;
+      min-height: 100vh;
+    }
 
-/* Chat */
-#chat{
-  flex:1.2;display:flex;flex-direction:column;
-  border:1px solid #333;border-radius:10px;
-  background:rgba(0,0,0,0.3);padding:10px;max-height:80vh;
-}
-#chat-header{
-  display:flex;justify-content:space-between;align-items:center;
-  font-weight:bold;border-bottom:1px solid #333;
-  padding-bottom:5px;margin-bottom:5px;color:#00bfff;
-}
-#chat-box{
-  flex:1;overflow-y:auto;padding:10px;border-bottom:1px solid #333;
-}
-.msg{margin-bottom:6px;line-height:1.4;}
-.user{color:#00ffff;font-weight:bold;}
-.time{color:#777;font-size:.8em;margin-left:5px;}
-#chat-inputs{display:flex;gap:8px;margin-top:8px;
+    #content img {
+      width: 750px;
+      max-width: 90vw;
+      margin-bottom: 40px;
+    }
+
+    .stream-wrapper {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 20px;
+      width: 90%;
+      max-width: 1400px;
+    }
+
+    .stream-column {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .mux-player-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    mux-player {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 🎯 tiny buttons under stream */
+    .button-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 10px;
+      margin-right: 8px;
+      perspective: 800px;
+    }
+
+    .n9ne-btn img {
+      width: 22px; /* 3–4x smaller */
+      transform: rotateX(15deg);
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 0 2px rgba(0, 191, 255, 0.5));
+    }
+
+    .n9ne-btn img:hover {
+      transform: rotateX(0deg) rotateY(10deg) translateZ(6px) scale(1.2);
+      filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.9));
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 2px rgba(0,255,255,0.6)); }
+      50% { filter: drop-shadow(0 0 8px rgba(0,255,255,1)); }
+    }
+
+    .n9ne-btn img.live {
+      animation: pulseGlow 2s infinite;
+    }
+
+    /* chat */
+    #chat {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #333;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      max-height: 80vh;
+    }
+
+    #chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      padding-bottom: 5px;
+      margin-bottom: 5px;
+      color: #00bfff;
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+
+    .msg {
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .user {
+      color: #00ffff;
+      font-weight: bold;
+    }
+
+    .time {
+      color: #777;
+      font-size: 0.75rem;
+      margin-left: 5px;
+    }
+
+    #chat-inputs {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    input, button {
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+    }
+
+    input {
+      flex: 1;
+      background: #111;
+      color: #fff;
+    }
+
+    button {
+      background: #00bfff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #00ffff;
+    }
+
+    @media (max-width: 900px) {
+      .stream-wrapper {
+        flex-direction: column;
+        align-items: center;
+      }
+      #chat {
+        width: 100%;
+        max-height: 400px;
+      }
+      .stream-column {
+        align-items: center;
+      }
+      .button-row {
+        justify-content: center;
+        margin-right: 0;
+      }
+    }
+  </style>
+
+  <!-- Mux -->
+  <script src="https://unpkg.com/@mux/mux-player"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- ⭐ star layers -->
+  <div class="star-layer" id="layer1"></div>
+  <div class="star-layer" id="layer2"></div>
+  <div class="star-layer" id="layer3"></div>
+
+  <div id="content">
+    <img src="channel9.png" alt="Channel N9NE Logo" />
+
+    <div class="stream-wrapper">
+      <!-- LEFT: stream + buttons -->
+      <div class="stream-column">
+        <div class="mux-player-container">
+          <mux-player
+            stream-type="live"
+            playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
+            primary-color="#00bfff"
+            metadata-video-title="Live Stream"
+            autoplay
+            muted
+          ></mux-player>
+        </div>
+
+        <!-- buttons under stream (left = venmo, right = sub) -->
+        <div class="button-row">
+          <a href="https://venmo.com/yourusername" target="_blank" class="n9ne-btn">
+            <img src="venmo.png" alt="Venmo" class="live" />
+          </a>
+          <a href="https://yourlink.com" target="_blank" class="n9ne-btn">
+            <img src="sub.png" alt="Subscribe" class="live" />
+          </a>
+        </div>
+      </div>
+
+      <!-- RIGHT: chat -->
+      <div id="chat">
+        <div id="chat-header">
+          <span>💬 Chat is Live</span>
+          <span id="viewer-count">0 watching</span>
+        </div>
+        <div id="chat-box"></div>
+        <div id="chat-inputs">
+          <input id="username" placeholder="Name" />
+          <input id="msg" placeholder="Say something..." />
+          <button id="send">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⭐ star animation script -->
+  <script>
+    const starLayers = [
+      { id: "layer1", count: 40, size: 1, speed: 0.3 },
+      { id: "layer2", count: 30, size: 2, speed: 0.2 },
+      { id: "layer3", count: 20, size: 3, speed: 0.1 },
+    ];
+
+    starLayers.forEach(layer => {
+      const container = document.getElementById(layer.id);
+      for (let i = 0; i < layer.count; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+        star.style.width = `${layer.size}px`;
+        star.style.height = `${layer.size}px`;
+        star.style.left = `${Math.random() * 100}vw`;
+        star.style.top = `${Math.random() * 100}vh`;
+        const duration = (Math.random() * 10 + 10) / layer.speed;
+        const delay = Math.random() * 20;
+        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+        container.appendChild(star);
+      }
+    });
+
+    const starStyle = document.createElement("style");
+    starStyle.innerHTML = `
+      @keyframes fall {
+        0% { transform: translateY(0); opacity: 1; }
+        100% { transform: translateY(100vh); opacity: 0.3; }
+      }
+    `;
+    document.head.appendChild(starStyle);
+  </script>
+
+  <!-- 💬 Supabase chat -->
+  <script>
+    const { createClient } = supabase;
+
+    const supabaseUrl = "https://kidmxnxkhyhaehzexatm.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U";
+    const db = createClient(supabaseUrl, supabaseKey);
+
+    const chatBox = document.getElementById("chat-box");
+    const usernameInput = document.getElementById("username");
+    const msgInput = document.getElementById("msg");
+    const sendBtn = document.getElementById("send");
+    const viewerCount = document.getElementById("viewer-count");
+
+    // safe client id (older browsers)
+    const clientId =
+      (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : Math.random().toString(36).slice(2);
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function addMessage(msg) {
+      const div = document.createElement("div");
+      div.classList.add("msg");
+      div.innerHTML =
+        `<span class="user">${msg.username}:</span> ${msg.text}` +
+        `<span class="time">${formatTime(msg.created_at)}</span>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function loadMessages() {
+      const { data, error } = await db
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Load error:", error.message);
+        return;
+      }
+
+      chatBox.innerHTML = "";
+      data.forEach(addMessage);
+    }
+
+    sendBtn.onclick = async () => {
+      const username = usernameInput.value.trim() || "Anon";
+      const text = msgInput.value.trim();
+      if (!text) return;
+
+      const { error } = await db
+        .from("messages")
+        .insert([{ username, text, client_id: clientId }]);
+      if (error) {
+        console.error("Insert error:", error.message);
+      }
+      msgInput.value = "";
+    };
+
+    // realtime
+    db.channel("public:messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        if (payload.new.client_id !== clientId) {
+          addMessage(payload.new);
+        }
+      })
+      .subscribe();
+
+    loadMessages();
+
+    // simple viewer text (kept basic so it can't break)
+    viewerCount.textContent = "live";
+  </script>
+</body>
+</html>
