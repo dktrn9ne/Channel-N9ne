@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Channel N9NE Live</title>
+
 <style>
 html, body {
   margin: 0; padding: 0; height: 100%;
@@ -17,7 +18,8 @@ body { min-height: 150vh; position: relative; }
 .star-layer {
   position: fixed; top: 0; left: 0;
   width: 100%; height: 100%;
-  pointer-events: none; z-index: 0; overflow: hidden;
+  pointer-events: none; z-index: 0;
+  overflow: hidden;
 }
 .star {
   position: absolute;
@@ -27,85 +29,136 @@ body { min-height: 150vh; position: relative; }
   box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
 }
 
-/* Main content */
+/* Layout */
 #content {
-  position: relative; z-index: 10;
-  display: flex; flex-direction: column;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding-top: 5vh; padding-bottom: 200px;
+  padding-top: 5vh;
+  padding-bottom: 200px;
   min-height: 100vh;
 }
-#content img { width: 750px; max-width: 90vw; margin-bottom: 40px; }
+#content img {
+  width: 750px;
+  max-width: 90vw;
+  margin-bottom: 40px;
+}
 
 .stream-wrapper {
-  display: flex; flex-direction: row;
-  justify-content: center; gap: 20px;
-  width: 90%; max-width: 1400px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+  width: 90%;
+  max-width: 1400px;
 }
 .stream-column {
-  flex: 3; display: flex; flex-direction: column; align-items: flex-end;
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 .mux-player-container {
-  width: 100%; aspect-ratio: 16/9;
-  border-radius: 10px; overflow: hidden;
-  background: rgba(0,0,0,0.3);
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
 }
-mux-player { width: 100%; height: 100%; }
+mux-player {
+  width: 100%;
+  height: 100%;
+}
 
-/* 🎯 Mini button row under stream */
+/* 🎯 Responsive micro icon buttons */
 .button-row {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  gap: 5px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
   margin-right: 10px;
   perspective: 800px;
 }
 
 .n9ne-btn img {
-  width: 14px; /* 🔹 ultra small buttons */
-  transform: rotateX(15deg);
+  width: 6px;   /* desktop base size */
+  height: 6px;
+  object-fit: contain;
+  transform: rotateX(12deg);
   transition: all 0.25s ease;
-  filter: drop-shadow(0 0 1px rgba(0,191,255,0.6));
+  filter: drop-shadow(0 0 1px rgba(0,191,255,0.7));
+  opacity: 0.9;
 }
-
 .n9ne-btn img:hover {
-  transform: rotateX(0deg) rotateY(10deg) translateZ(3px) scale(1.4);
-  filter: drop-shadow(0 0 5px rgba(0,255,255,0.9));
+  transform: rotateX(0deg) rotateY(8deg) translateZ(2px) scale(2);
+  filter: drop-shadow(0 0 6px rgba(0,255,255,0.9));
+  opacity: 1;
 }
-
 @keyframes pulseGlow {
-  0%, 100% { filter: drop-shadow(0 0 1px rgba(0,255,255,0.6)); }
-  50% { filter: drop-shadow(0 0 5px rgba(0,255,255,1)); }
+  0%,100% { filter: drop-shadow(0 0 1px rgba(0,255,255,0.6)); }
+  50%     { filter: drop-shadow(0 0 4px rgba(0,255,255,1)); }
 }
-
 .n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
+
+/* 🪄 Responsive scaling */
+@media (max-width: 900px) {
+  .n9ne-btn img { width: 10px; height: 10px; }   /* tablet */
+  .button-row { justify-content: center; margin-right: 0; }
+}
+@media (max-width: 600px) {
+  .n9ne-btn img { width: 14px; height: 14px; }   /* phone */
+}
 
 /* Chat */
 #chat {
-  flex: 1.2; display: flex; flex-direction: column;
-  border: 1px solid #333; border-radius: 10px;
-  background: rgba(0,0,0,0.3);
-  padding: 10px; max-height: 80vh;
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  max-height: 80vh;
 }
 #chat-header {
-  display: flex; justify-content: space-between; align-items: center;
-  font-weight: bold; border-bottom: 1px solid #333;
-  padding-bottom: 5px; margin-bottom: 5px; color: #00bfff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  color: #00bfff;
 }
 #chat-box {
-  flex: 1; overflow-y: auto;
-  padding: 10px; border-bottom: 1px solid #333;
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  border-bottom: 1px solid #333;
 }
 .msg { margin-bottom: 6px; line-height: 1.4; }
 .user { color: #00ffff; font-weight: bold; }
 .time { color: #777; font-size: 0.8em; margin-left: 5px; }
-#chat-inputs { display: flex; gap: 8px; margin-top: 8px; }
-input, button { border: none; border-radius: 5px; padding: 8px; }
+#chat-inputs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+input, button {
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+}
 input { flex: 1; background: #111; color: #fff; }
 button {
-  background: #00bfff; color: #000; font-weight: bold; cursor: pointer;
+  background: #00bfff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
 }
 button:hover { background: #00ffff; }
 
@@ -113,141 +166,135 @@ button:hover { background: #00ffff; }
   .stream-wrapper { flex-direction: column; align-items: center; }
   #chat { width: 100%; max-height: 400px; }
   .stream-column { align-items: center; }
-  .button-row { justify-content: center; margin-right: 0; }
 }
-  </style>
+</style>
 
-  <script src="https://unpkg.com/@mux/mux-player"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@mux/mux-player"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <!-- 🌠 Star Layers -->
-  <div class="star-layer" id="layer1"></div>
-  <div class="star-layer" id="layer2"></div>
-  <div class="star-layer" id="layer3"></div>
+<!-- 🌠 Stars -->
+<div class="star-layer" id="layer1"></div>
+<div class="star-layer" id="layer2"></div>
+<div class="star-layer" id="layer3"></div>
 
-  <div id="content">
-    <img src="channel9.png" alt="Channel N9NE Logo"/>
+<div id="content">
+  <img src="channel9.png" alt="Channel N9NE Logo"/>
 
-    <div class="stream-wrapper">
-      <div class="stream-column">
-        <div class="mux-player-container">
-          <mux-player
-            stream-type="live"
-            playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-            primary-color="#00bfff"
-            metadata-video-title="Live Stream"
-            autoplay muted>
-          </mux-player>
-        </div>
-
-        <!-- 🚀 Mini buttons -->
-        <div class="button-row">
-          <a href="https://venmo.com/yourusername" target="_blank" class="n9ne-btn">
-            <img src="venmo.png" alt="Venmo" class="live" />
-          </a>
-          <a href="https://yourlink.com" target="_blank" class="n9ne-btn">
-            <img src="sub.png" alt="Subscribe" class="live" />
-          </a>
-        </div>
+  <div class="stream-wrapper">
+    <div class="stream-column">
+      <div class="mux-player-container">
+        <mux-player
+          stream-type="live"
+          playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
+          primary-color="#00bfff"
+          metadata-video-title="Live Stream"
+          autoplay muted>
+        </mux-player>
       </div>
 
-      <!-- 💬 Chat -->
-      <div id="chat">
-        <div id="chat-header">
-          <span>💬 Chat is Live</span>
-          <span id="viewer-count">0 watching</span>
-        </div>
-        <div id="chat-box"></div>
-        <div id="chat-inputs">
-          <input id="username" placeholder="Name" />
-          <input id="msg" placeholder="Say something..." />
-          <button id="send">Send</button>
-        </div>
+      <!-- 🚀 Icon Buttons -->
+      <div class="button-row">
+        <a href="https://venmo.com/yourusername" target="_blank" class="n9ne-btn">
+          <img src="venmo.png" alt="Venmo" class="live" />
+        </a>
+        <a href="https://yourlink.com" target="_blank" class="n9ne-btn">
+          <img src="sub.png" alt="Subscribe" class="live" />
+        </a>
+      </div>
+    </div>
+
+    <!-- 💬 Chat -->
+    <div id="chat">
+      <div id="chat-header">
+        <span>💬 Chat is Live</span>
+        <span id="viewer-count">0 watching</span>
+      </div>
+      <div id="chat-box"></div>
+      <div id="chat-inputs">
+        <input id="username" placeholder="Name"/>
+        <input id="msg" placeholder="Say something..."/>
+        <button id="send">Send</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ✨ Stars Script -->
-  <script>
-    const layers = [
-      { id: 'layer1', count: 40, size: 1, speed: 0.3 },
-      { id: 'layer2', count: 30, size: 2, speed: 0.2 },
-      { id: 'layer3', count: 20, size: 3, speed: 0.1 }
-    ];
-    layers.forEach(layer => {
-      const container = document.getElementById(layer.id);
-      for (let i = 0; i < layer.count; i++) {
-        const s = document.createElement('div');
-        s.classList.add('star');
-        s.style.width = `${layer.size}px`;
-        s.style.height = `${layer.size}px`;
-        s.style.left = `${Math.random() * 100}vw`;
-        s.style.top = `${Math.random() * 100}vh`;
-        const duration = (Math.random() * 10 + 10) / layer.speed;
-        const delay = Math.random() * 20;
-        s.style.animation = `fall ${duration}s linear ${delay}s infinite`;
-        container.appendChild(s);
-      }
-    });
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(100vh); opacity: 0.3; }
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
+<!-- ✨ Stars Script -->
+<script>
+const layers = [
+  { id: 'layer1', count: 40, size: 1, speed: 0.3 },
+  { id: 'layer2', count: 30, size: 2, speed: 0.2 },
+  { id: 'layer3', count: 20, size: 3, speed: 0.1 }
+];
+layers.forEach(layer => {
+  const container = document.getElementById(layer.id);
+  for (let i = 0; i < layer.count; i++) {
+    const s = document.createElement('div');
+    s.classList.add('star');
+    s.style.width = `${layer.size}px`;
+    s.style.height = `${layer.size}px`;
+    s.style.left = `${Math.random() * 100}vw`;
+    s.style.top = `${Math.random() * 100}vh`;
+    const d = (Math.random() * 10 + 10) / layer.speed;
+    const delay = Math.random() * 20;
+    s.style.animation = `fall ${d}s linear ${delay}s infinite`;
+    container.appendChild(s);
+  }
+});
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes fall {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(100vh); opacity: 0.3; }
+  }`;
+document.head.appendChild(style);
+</script>
 
-  <!-- 💬 Chat (Supabase) -->
-  <script>
-    const { createClient } = supabase;
-    const db = createClient(
-      'https://kidmxnxkhyhaehzexatm.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U'
-    );
-    const chatBox = document.getElementById('chat-box');
-    const usernameInput = document.getElementById('username');
-    const msgInput = document.getElementById('msg');
-    const sendBtn = document.getElementById('send');
-    const viewerCount = document.getElementById('viewer-count');
-    const clientId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+<!-- 💬 Chat Logic -->
+<script>
+const { createClient } = supabase;
+const db = createClient(
+  'https://kidmxnxkhyhaehzexatm.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U'
+);
+const chatBox = document.getElementById('chat-box');
+const usernameInput = document.getElementById('username');
+const msgInput = document.getElementById('msg');
+const sendBtn = document.getElementById('send');
+const viewerCount = document.getElementById('viewer-count');
+const clientId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
 
-    function formatTime(iso) {
-      const d = new Date(iso);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function addMessage(m) {
-      const div = document.createElement('div');
-      div.classList.add('msg');
-      div.innerHTML = `<span class="user">${m.username}:</span> ${m.text}<span class="time">${formatTime(m.created_at)}</span>`;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    async function loadMessages() {
-      const { data, error } = await db.from('messages').select('*').order('created_at', { ascending: true });
-      if (error) return console.error(error);
-      chatBox.innerHTML = '';
-      data.forEach(addMessage);
-    }
-
-    sendBtn.onclick = async () => {
-      const username = usernameInput.value.trim() || 'Anon';
-      const text = msgInput.value.trim();
-      if (!text) return;
-      await db.from('messages').insert([{ username, text, client_id: clientId }]);
-      msgInput.value = '';
-    };
-
-    db.channel('public:messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
-        payload => { if (payload.new.client_id !== clientId) addMessage(payload.new); })
-      .subscribe();
-
-    loadMessages();
-  </script>
+function formatTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+function addMessage(m) {
+  const div = document.createElement('div');
+  div.classList.add('msg');
+  div.innerHTML = `<span class="user">${m.username}:</span> ${m.text}<span class="time">${formatTime(m.created_at)}</span>`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+async function loadMessages() {
+  const { data, error } = await db.from('messages').select('*').order('created_at', { ascending: true });
+  if (error) return console.error(error);
+  chatBox.innerHTML = '';
+  data.forEach(addMessage);
+}
+sendBtn.onclick = async () => {
+  const username = usernameInput.value.trim() || 'Anon';
+  const text = msgInput.value.trim();
+  if (!text) return;
+  await db.from('messages').insert([{ username, text, client_id: clientId }]);
+  msgInput.value = '';
+};
+db.channel('public:messages')
+ .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
+   payload => { if (payload.new.client_id !== clientId) addMessage(payload.new); })
+ .subscribe();
+loadMessages();
+</script>
 </body>
 </html>
