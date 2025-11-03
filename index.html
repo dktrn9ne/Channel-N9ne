@@ -35,40 +35,54 @@ body { min-height: 100vh; position: relative; }
 .mux-player-container { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: rgba(0, 0, 0, 0.3); }
 mux-player { width: 100%; height: 100%; }
 
-/* BUTTONS — smaller & neatly below stream */
+/* BUTTONS — smaller and tucked neatly under stream */
 .button-row {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 12px;
   padding-right: 8px;
   box-sizing: border-box;
   position: relative;
 }
 
 .n9ne-btn img {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   transition: all 0.25s ease;
-  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
-  opacity: 0.95;
+  filter: drop-shadow(0 0 1px rgba(0,191,255,0.8));
+  opacity: 0.9;
 }
 
 .n9ne-btn img:hover {
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 6px rgba(0,255,255,1));
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 4px rgba(0,255,255,1));
   opacity: 1;
 }
 
 @keyframes pulseGlow {
-  0%,100% { filter: drop-shadow(0 0 2px rgba(0,255,255,.6)); }
-  50% { filter: drop-shadow(0 0 6px rgba(0,255,255,1)); }
+  0%,100% { filter: drop-shadow(0 0 1px rgba(0,255,255,.5)); }
+  50% { filter: drop-shadow(0 0 4px rgba(0,255,255,1)); }
 }
 .n9ne-btn img.live {
   animation: pulseGlow 2.5s infinite;
 }
+
+/* 📱 MOBILE ADJUSTMENT */
+@media (max-width: 900px) {
+  .button-row {
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 10px;
+  }
+  .n9ne-btn img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 
 /* CHAT */
 #chat { flex: 1.2; display: flex; flex-direction: column; border: 1px solid #333; border-radius: 10px; background: rgba(0,0,0,0.3); padding: 10px; max-height: 80vh; width: 100%; box-sizing: border-box; }
