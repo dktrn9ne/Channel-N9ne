@@ -8,6 +8,16 @@ export default async function handler(req, res) {
   const authHeader =
     'Basic ' + Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString('base64');
 
+  // ⏱️ Helper: Format duration from seconds → "1h 02m" or "59m 58s"
+  function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return '—';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    if (hrs > 0) return `${hrs}h ${mins.toString().padStart(2, '0')}m`;
+    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+  }
+
   try {
     // 1️⃣ Get latest Mux assets
     const assetRes = await fetch('https://api.mux.com/video/v1/assets?limit=20', {
@@ -55,7 +65,7 @@ export default async function handler(req, res) {
           title,
           playback_id: playbackId,
           thumbnail_url: thumbnailUrl,
-          duration: asset.duration,
+          duration: formatDuration(asset.duration),
           views: totalViews,
           created_at: createdAt,
         };
@@ -65,6 +75,8 @@ export default async function handler(req, res) {
     res.status(200).json(enriched.filter(Boolean));
   } catch (error) {
     console.error('Mux API Error:', error);
-    res.status(500).json({ error: 'Failed to fetch Mux data', details: error.message });
+    res
+      .status(500)
+      .json({ error: 'Failed to fetch Mux data', details: error.message });
   }
 }
