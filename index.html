@@ -243,10 +243,42 @@ button:hover { background: #00ffff; }
 </div>
 
 <!-- ✨ Stars Script -->
+<!-- ✨ Stars Script -->
 <script>
-const layers=[{id:'layer1',count:40,size:1,speed:.3},{id:'layer2',count:30,size:2,speed:.2},{id:'layer3',count:20,size:3,speed:.1}];
-layers.forEach(l=>{const c=document.getElementById(l.id);for(let i=0;i<l.count;i++){const s=document.createElement('div');s.classList.add('star');s.style.width=`${l.size}px`;s.style.height=`${l.size}px`;s.style.left=`${Math.random()*100}vw`;s.style.top=`${Math.random()*100}vh`;const d=(Math.random()*10+10)/l.speed;const delay=Math.random()*20;s.style.animation=`fall ${d}s linear ${delay}s infinite`;c.appendChild(s);}});
-const style=document.createElement('style');style.innerHTML=`@keyframes fall{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(100vh);opacity:.3;}}`;document.head.appendChild(style);
+const layers = [
+  { id: 'layer1', count: 120, sizeRange: [1, 2], speed: 0.3 }, // more stars
+  { id: 'layer2', count: 90,  sizeRange: [2, 3], speed: 0.2 },
+  { id: 'layer3', count: 60,  sizeRange: [3, 4], speed: 0.1 }
+];
+
+layers.forEach(l => {
+  const c = document.getElementById(l.id);
+  for (let i = 0; i < l.count; i++) {
+    const s = document.createElement('div');
+    s.classList.add('star');
+    const size = Math.random() * (l.sizeRange[1] - l.sizeRange[0]) + l.sizeRange[0];
+    s.style.width = `${size}px`;
+    s.style.height = `${size}px`;
+    s.style.left = `${Math.random() * 100}vw`;
+    s.style.top = `${Math.random() * 100}vh`;
+    s.style.opacity = Math.random() * 0.8 + 0.2;
+    s.style.animation = `twinkle ${4 + Math.random() * 4}s ease-in-out ${Math.random() * 3}s infinite, 
+                         fall ${(Math.random() * 10 + 15) / l.speed}s linear ${Math.random() * 20}s infinite`;
+    c.appendChild(s);
+  }
+});
+
+// Add animations dynamically
+const style = document.createElement('style');
+style.innerHTML = `
+@keyframes fall {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0.3; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.3); }
+}`;
+document.head.appendChild(style);
 </script>
-</body>
-</html>
+
