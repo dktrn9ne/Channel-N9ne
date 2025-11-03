@@ -5,15 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Channel N9NE Live</title>
 
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5674785666719328" crossorigin="anonymous"></script>
-
-<!-- 3D MODEL VIEWER -->
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-<!-- Styles (same as before) -->
 <style>
-/* ... your existing styles ... */
 html, body {
   margin: 0;
   padding: 0;
@@ -23,8 +15,206 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
-body { min-height: 100vh; position: relative; }
-/* stars, stream layout, chat, etc (keep all your current CSS unchanged) */
+
+body {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ✨ Stars */
+.star-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+}
+
+/* Layout */
+#content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5vh 0 100px 0;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#content img {
+  width: 80%;
+  max-width: 600px;
+  height: auto;
+  margin-bottom: 30px;
+}
+
+/* STREAM + CHAT */
+.stream-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 95%;
+  max-width: 1200px;
+  box-sizing: border-box;
+}
+.stream-column {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mux-player-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+mux-player {
+  width: 100%;
+  height: 100%;
+}
+
+/* BUTTONS */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  width: 100%;
+  margin-top: 12px;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+.n9ne-btn img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transform: rotateX(12deg);
+  transition: all 0.25s ease;
+  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
+  opacity: 0.95;
+}
+.n9ne-btn img:hover {
+  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(0,255,255,1));
+  opacity: 1;
+}
+@keyframes pulseGlow {
+  0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));}
+  50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
+}
+.n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
+
+/* CHAT */
+#chat {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  max-height: 80vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  color: #00bfff;
+}
+#chat-box {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+.msg { margin-bottom: 6px; line-height: 1.4; }
+.user { color: #00ffff; font-weight: bold; }
+.time { color: #777; font-size: 0.8em; margin-left: 5px; }
+#chat-inputs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+input, button {
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+}
+input {
+  flex: 1;
+  background: #111;
+  color: #fff;
+}
+button {
+  background: #00bfff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: #00ffff; }
+
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 900px) {
+  #content { padding: 2vh 0 80px 0; }
+  .stream-wrapper {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .stream-column {
+    align-items: center;
+    width: 100%;
+  }
+  .button-row {
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 10px;
+  }
+  #chat {
+    width: 95%;
+    max-height: 400px;
+  }
+  .n9ne-btn img {
+    width: 56px;
+    height: 56px;
+  }
+}
+@media (max-width: 600px) {
+  #content img {
+    width: 90%;
+    margin-bottom: 20px;
+  }
+  .n9ne-btn img {
+    width: 60px;
+    height: 60px;
+  }
+  #chat {
+    width: 90%;
+    max-height: 350px;
+  }
+}
 </style>
 
 <script src="https://unpkg.com/@mux/mux-player"></script>
@@ -52,7 +242,7 @@ body { min-height: 100vh; position: relative; }
         </mux-player>
       </div>
 
-      <!-- 🚀 Buttons + 3D model -->
+      <!-- 🚀 Buttons below stream (right side) -->
       <div class="button-row">
         <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
           <img src="venmo.png" alt="Venmo" class="live" />
@@ -60,31 +250,15 @@ body { min-height: 100vh; position: relative; }
         <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
           <img src="sub.png" alt="Subscribe" class="live" />
         </a>
-        <a href="https://www.even.biz/r/ghetto-haiku" target="_blank" class="n9ne-model">
-          <model-viewer
-            src="tob.glb"
-            alt="N9ne 3D"
-            auto-rotate
-            rotation-per-second="15deg"
-            camera-controls
-            disable-zoom
-            ar
-            exposure="1.2"
-            shadow-intensity="1"
-            shadow-softness="1"
-            environment-image="neutral"
-            tone-mapping="aces"
-            interpolation-decay="200"
-            camera-orbit="0deg 75deg auto"
-            field-of-view="20deg">
-          </model-viewer>
-        </a>
       </div>
     </div>
 
     <!-- 💬 Chat -->
     <div id="chat">
-      <div id="chat-header"><span>💬 Chat is Live</span><span id="viewer-count">0 watching</span></div>
+      <div id="chat-header">
+        <span>💬 Chat is Live</span>
+        <span id="viewer-count">0 watching</span>
+      </div>
       <div id="chat-box"></div>
       <div id="chat-inputs">
         <input id="username" placeholder="Name"/>
@@ -93,107 +267,77 @@ body { min-height: 100vh; position: relative; }
       </div>
     </div>
   </div>
-
-  <!-- 🎥 Previous Streams Carousel BELOW CHAT -->
-  <hr style="width:80%; border: 1px solid rgba(0,255,255,0.2); margin: 40px auto;">
-  <div id="archive-section">
-    <h2>Previous Streams</h2>
-    <div id="archive-carousel"></div>
-  </div>
 </div>
 
-<!-- ✨ Stars Script (keep yours) -->
+<!-- ✨ Stars Script -->
 <script>
-/* your star animation script here */
+const layers=[
+ {id:'layer1',count:40,size:1,speed:.3},
+ {id:'layer2',count:30,size:2,speed:.2},
+ {id:'layer3',count:20,size:3,speed:.1}
+];
+layers.forEach(l=>{
+ const c=document.getElementById(l.id);
+ for(let i=0;i<l.count;i++){
+   const s=document.createElement('div');
+   s.classList.add('star');
+   s.style.width=`${l.size}px`;
+   s.style.height=`${l.size}px`;
+   s.style.left=`${Math.random()*100}vw`;
+   s.style.top=`${Math.random()*100}vh`;
+   const d=(Math.random()*10+10)/l.speed;
+   const delay=Math.random()*20;
+   s.style.animation=`fall ${d}s linear ${delay}s infinite`;
+   c.appendChild(s);
+ }
+});
+const style=document.createElement('style');
+style.innerHTML=`@keyframes fall{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(100vh);opacity:.3;}}`;
+document.head.appendChild(style);
 </script>
 
-<!-- 💬 Supabase Chat Integration -->
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const supabase = createClient(
-  'https://kidmxnxkhyhaehzexatm.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U'
+<!-- 💬 Supabase Chat -->
+<script>
+const {createClient}=supabase;
+const db=createClient(
+ 'https://kidmxnxkhyhaehzexatm.supabase.co',
+ 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U'
 );
+const chatBox=document.getElementById('chat-box');
+const usernameInput=document.getElementById('username');
+const msgInput=document.getElementById('msg');
+const sendBtn=document.getElementById('send');
+const clientId=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).substring(2);
 
-const chatBox = document.getElementById('chat-box');
-const usernameInput = document.getElementById('username');
-const msgInput = document.getElementById('msg');
-const sendBtn = document.getElementById('send');
-
-async function loadMessages() {
-  const { data, error } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
-  if (error) return console.error(error);
-  renderMessages(data);
+function formatTime(iso){
+  const d=new Date(iso);
+  return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
-
-function renderMessages(messages) {
-  chatBox.innerHTML = '';
-  messages.forEach(m => {
-    const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const el = document.createElement('div');
-    el.classList.add('msg');
-    el.innerHTML = `<span class="user">${m.username}</span>: ${m.message || m.content} <span class="time">${time}</span>`;
-    chatBox.appendChild(el);
-  });
-  chatBox.scrollTop = chatBox.scrollHeight;
+function addMessage(m){
+  const div=document.createElement('div');
+  div.classList.add('msg');
+  div.innerHTML=`<span class="user">${m.username}:</span> ${m.text}<span class="time">${formatTime(m.created_at)}</span>`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
-
-sendBtn.onclick = async () => {
-  const username = usernameInput.value.trim() || 'Anon';
-  const text = msgInput.value.trim();
-  if (!text) return;
-  msgInput.value = '';
-  await supabase.from('messages').insert([{ username, message: text }]);
+async function loadMessages(){
+  const {data,error}=await db.from('messages').select('*').order('created_at',{ascending:true});
+  if(error)return console.error(error);
+  chatBox.innerHTML='';
+  data.forEach(addMessage);
+}
+sendBtn.onclick=async()=>{
+  const username=usernameInput.value.trim()||'Anon';
+  const text=msgInput.value.trim();
+  if(!text)return;
+  await db.from('messages').insert([{username,text,client_id:clientId}]);
+  msgInput.value='';
 };
-
-supabase.channel('realtime:messages')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-    const m = payload.new;
-    const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const el = document.createElement('div');
-    el.classList.add('msg');
-    el.innerHTML = `<span class="user">${m.username}</span>: ${m.message || m.content} <span class="time">${time}</span>`;
-    chatBox.appendChild(el);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  })
-  .subscribe();
-
+db.channel('public:messages')
+ .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},
+   p=>{if(p.new.client_id!==clientId)addMessage(p.new);})
+ .subscribe();
 loadMessages();
 </script>
-
-<!-- 🎥 Previous Streams Fetch + Display -->
-<script>
-async function loadArchives() {
-  try {
-    const res = await fetch('https://channeln9ne.xyz/api/get-mux-streams'); // ✅ Make sure your API route is deployed
-    if (!res.ok) throw new Error('Failed to load streams');
-    const streams = await res.json();
-
-    const container = document.getElementById('archive-carousel');
-    container.innerHTML = '';
-
-    streams.forEach(stream => {
-      const card = document.createElement('div');
-      card.classList.add('archive-card');
-      card.innerHTML = `
-        <img src="${stream.thumbnail_url}" alt="${stream.title}" onclick="window.open('https://stream.mux.com/${stream.playback_id}.m3u8','_blank')" />
-        <div class="archive-meta">
-          <span>${stream.title}</span>
-        </div>
-        <div class="archive-meta">
-          <span>${Math.round(stream.duration / 60)} min</span>
-          <span>👁️ ${stream.views}</span>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  } catch (err) {
-    console.error('Error loading streams:', err);
-  }
-}
-
-loadArchives();
-</script>
-
 </body>
 </html>
