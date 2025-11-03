@@ -162,7 +162,7 @@ async function loadArchives() {
   container.innerHTML = '<p style="color:#00bfff;">Loading streams...</p>';
 
   try {
-    const muxRes = await fetch('https://YOURPROJECT.functions.supabase.co/get-mux-streams');
+    const muxRes = await fetch('https://channel-n9ne.vercel.app/api/get-mux-streams');
     const muxStreams = await muxRes.json();
     const { data: localData } = await db.from('archives').select('mux_asset_id, id, likes, views');
     const localMap = {};
