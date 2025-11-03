@@ -181,7 +181,7 @@ async function loadArchives() {
         <img src="${thumb}" alt="${stream.title}" onclick="openMuxPlayer('${stream.playback_id}', '${stream.title}', '${localId}')">
         <div class="archive-meta">
           <span>${stream.views} 👁️</span>
-         <span>${stream.duration}</span>
+          <span class="duration-tag">⏱️ ${stream.duration}</span>
           <span class="like-btn" data-id="${localId}">❤️ ${likeCount}</span>
         </div>
         <div class="archive-title">${stream.title}</div>
