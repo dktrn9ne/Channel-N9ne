@@ -209,18 +209,34 @@ button:hover { background: #00ffff; }
           <img src="sub.png" alt="Subscribe" class="live" />
         </a>
         <!-- 🧊 3D Model CTA -->
-        <a href="https://yourdestinationlink.com" target="_blank" class="n9ne-model">
-          <model-viewer
-            src="tob.glb"
-            alt="N9ne 3D"
-            auto-rotate
-            camera-controls
-            disable-zoom
-            ar>
-          </model-viewer>
-        </a>
-      </div>
-    </div>
+<a href="https://yourdestinationlink.com" target="_blank" class="n9ne-model">
+  <model-viewer
+    src="tob.glb"
+    alt="N9ne 3D"
+    auto-rotate
+    rotation-per-second="15deg"
+    camera-controls
+    disable-zoom
+    ar
+    exposure="1.2"
+    shadow-intensity="1"
+    shadow-softness="1"
+    environment-image="neutral"
+    tone-mapping="aces"
+    interpolation-decay="200"
+    camera-orbit="0deg 75deg auto"
+    field-of-view="20deg"
+    style="
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: transparent;
+      --progress-bar-color: transparent;
+      --poster-color: transparent;
+      --poster-image: none;
+    ">
+  </model-viewer>
+</a>
 
     <!-- 💬 Chat -->
     <div id="chat">
