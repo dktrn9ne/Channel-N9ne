@@ -69,9 +69,15 @@ button:hover { background: #00ffff; }
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: 10px;
+  padding: 10px 30px 20px 30px; /* Fix for cutoff */
   scroll-snap-type: x mandatory;
-  justify-content: center;
+  scroll-padding: 30px;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+#archive-carousel::-webkit-scrollbar {
+  display: none; /* hide scrollbar for clean look */
 }
 .archive-card {
   flex: 0 0 auto;
@@ -82,6 +88,9 @@ button:hover { background: #00ffff; }
   box-shadow: 0 0 6px rgba(0,255,255,0.3);
   scroll-snap-align: center;
   text-align: left;
+}
+.archive-card:last-child {
+  margin-right: 30px; /* ensures last card visible */
 }
 .archive-card img { width: 100%; border-radius: 8px; cursor: pointer; }
 .archive-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
