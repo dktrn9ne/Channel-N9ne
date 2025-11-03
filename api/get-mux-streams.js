@@ -1,5 +1,3 @@
-// api/get-mux-streams.js
-
 export default async function handler(req, res) {
   const { MUX_TOKEN_ID, MUX_TOKEN_SECRET } = process.env;
 
@@ -7,14 +5,18 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Mux API credentials missing' });
   }
 
-  const authHeader = "Basic " + Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString("base64");
+  const authHeader =
+    'Basic ' + Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString('base64');
 
   try {
-    // 1️⃣ Get Mux assets
-    const assetRes = await fetch("https://api.mux.com/video/v1/assets?limit=20", {
+    // 1️⃣ Get latest Mux assets
+    const assetRes = await fetch('https://api.mux.com/video/v1/assets?limit=20', {
       headers: { Authorization: authHeader },
     });
-    const { data: assets } = await assetRes.json();
+    const { data: assets = [] } = await assetRes.json();
+
+    // Sort newest first
+    assets.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
 
     // 2️⃣ For each asset, fetch analytics from Mux Data
     const enriched = await Promise.all(
@@ -22,6 +24,7 @@ export default async function handler(req, res) {
         if (!asset.playback_ids?.length) return null;
         const playbackId = asset.playback_ids[0].id;
 
+        // 🎯 Fetch Mux Data metrics (views)
         const dataRes = await fetch(
           `https://api.mux.com/data/v1/metrics/views?filters[]=asset_id:${asset.id}`,
           { headers: { Authorization: authHeader } }
@@ -29,14 +32,32 @@ export default async function handler(req, res) {
         const { data } = await dataRes.json();
         const totalViews = data?.[0]?.total_views || 0;
 
+        // 🕒 Fix date (Mux returns UNIX seconds)
+        const createdAt = asset.created_at
+          ? new Date(asset.created_at * 1000)
+          : new Date();
+
+        // 🖼️ Thumbnail + Title fallback
+        const title =
+          asset.name ||
+          `Stream from ${createdAt.toLocaleDateString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}`;
+
+        const thumbnailUrl =
+          asset.static_renditions?.files?.[0]?.url ||
+          `https://image.mux.com/${playbackId}/thumbnail.jpg?time=2`;
+
         return {
           mux_asset_id: asset.id,
-          title: asset.name || `Stream from ${new Date(asset.created_at).toLocaleDateString()}`,
+          title,
           playback_id: playbackId,
-          thumbnail_url: `https://image.mux.com/${playbackId}/thumbnail.jpg?time=2`,
+          thumbnail_url: thumbnailUrl,
           duration: asset.duration,
           views: totalViews,
-          created_at: asset.created_at,
+          created_at: createdAt,
         };
       })
     );
@@ -44,6 +65,6 @@ export default async function handler(req, res) {
     res.status(200).json(enriched.filter(Boolean));
   } catch (error) {
     console.error('Mux API Error:', error);
-    res.status(500).json({ error: 'Failed to fetch Mux data' });
+    res.status(500).json({ error: 'Failed to fetch Mux data', details: error.message });
   }
 }
