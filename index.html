@@ -35,12 +35,40 @@ body { min-height: 100vh; position: relative; }
 .mux-player-container { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: rgba(0, 0, 0, 0.3); }
 mux-player { width: 100%; height: 100%; }
 
-/* BUTTONS */
-.button-row { display: flex; justify-content: flex-end; gap: 14px; width: 100%; margin-top: 12px; padding-right: 12px; box-sizing: border-box; }
-.n9ne-btn img { width: 48px; height: 48px; object-fit: contain; transform: rotateX(12deg); transition: all 0.25s ease; filter: drop-shadow(0 0 2px rgba(0,191,255,0.8)); opacity: 0.95; }
-.n9ne-btn img:hover { transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15); filter: drop-shadow(0 0 8px rgba(0,255,255,1)); opacity: 1; }
-@keyframes pulseGlow { 0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));} 50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));} }
-.n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
+/* BUTTONS — smaller & neatly below stream */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  margin-top: 16px;
+  padding-right: 8px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.n9ne-btn img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  transition: all 0.25s ease;
+  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
+  opacity: 0.95;
+}
+
+.n9ne-btn img:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(0,255,255,1));
+  opacity: 1;
+}
+
+@keyframes pulseGlow {
+  0%,100% { filter: drop-shadow(0 0 2px rgba(0,255,255,.6)); }
+  50% { filter: drop-shadow(0 0 6px rgba(0,255,255,1)); }
+}
+.n9ne-btn img.live {
+  animation: pulseGlow 2.5s infinite;
+}
 
 /* CHAT */
 #chat { flex: 1.2; display: flex; flex-direction: column; border: 1px solid #333; border-radius: 10px; background: rgba(0,0,0,0.3); padding: 10px; max-height: 80vh; width: 100%; box-sizing: border-box; }
@@ -69,7 +97,7 @@ button:hover { background: #00ffff; }
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: 10px 30px 20px 30px; /* Fix for cutoff */
+  padding: 10px 30px 20px 30px;
   scroll-snap-type: x mandatory;
   scroll-padding: 30px;
   justify-content: flex-start;
@@ -77,7 +105,7 @@ button:hover { background: #00ffff; }
   scroll-behavior: smooth;
 }
 #archive-carousel::-webkit-scrollbar {
-  display: none; /* hide scrollbar for clean look */
+  display: none;
 }
 .archive-card {
   flex: 0 0 auto;
@@ -90,7 +118,7 @@ button:hover { background: #00ffff; }
   text-align: left;
 }
 .archive-card:last-child {
-  margin-right: 30px; /* ensures last card visible */
+  margin-right: 30px;
 }
 .archive-card img { width: 100%; border-radius: 8px; cursor: pointer; }
 .archive-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
@@ -102,6 +130,7 @@ button:hover { background: #00ffff; }
 @media (max-width: 900px) {
   .stream-wrapper { flex-direction: column; align-items: center; width: 100%; }
   #chat { width: 95%; max-height: 400px; }
+  .button-row { justify-content: center; padding-right: 0; }
 }
 </style>
 
@@ -130,7 +159,7 @@ button:hover { background: #00ffff; }
         </mux-player>
       </div>
 
-      <!-- 🚀 Buttons -->
+      <!-- 🚀 Buttons directly under video -->
       <div class="button-row">
         <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
           <img src="venmo.png" alt="Venmo" class="live" />
