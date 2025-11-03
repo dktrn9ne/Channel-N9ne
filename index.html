@@ -6,8 +6,11 @@
 <title>Channel N9NE Live</title>
 
 <!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5674785666719328"
-     crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5674785666719328" crossorigin="anonymous"></script>
+
+<!-- 3D MODEL VIEWER -->
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
 <!-- Styles -->
 <style>
 html, body {
@@ -35,11 +38,12 @@ body { min-height: 100vh; position: relative; }
 .mux-player-container { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: rgba(0, 0, 0, 0.3); }
 mux-player { width: 100%; height: 100%; }
 
-/* BUTTONS — smaller and tucked neatly under stream */
+/* BUTTONS + 3D MODEL */
 .button-row {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   margin-top: 12px;
   padding-right: 8px;
@@ -70,6 +74,37 @@ mux-player { width: 100%; height: 100%; }
   animation: pulseGlow 2.5s infinite;
 }
 
+/* 3D MODEL STYLING */
+.n9ne-model {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0,255,255,0.05);
+  box-shadow: 0 0 6px rgba(0,255,255,0.3);
+  transition: all 0.3s ease;
+}
+
+.n9ne-model:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0,255,255,0.6);
+}
+
+model-viewer {
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 3px rgba(0,255,255,0.5));
+}
+
+model-viewer:hover {
+  filter: drop-shadow(0 0 6px rgba(0,255,255,0.9));
+}
+
 /* 📱 MOBILE ADJUSTMENT */
 @media (max-width: 900px) {
   .button-row {
@@ -81,8 +116,15 @@ mux-player { width: 100%; height: 100%; }
     width: 24px;
     height: 24px;
   }
+  .n9ne-model {
+    width: 32px;
+    height: 32px;
+  }
+  model-viewer {
+    width: 30px;
+    height: 30px;
+  }
 }
-
 
 /* CHAT */
 #chat { flex: 1.2; display: flex; flex-direction: column; border: 1px solid #333; border-radius: 10px; background: rgba(0,0,0,0.3); padding: 10px; max-height: 80vh; width: 100%; box-sizing: border-box; }
@@ -118,9 +160,7 @@ button:hover { background: #00ffff; }
   box-sizing: border-box;
   scroll-behavior: smooth;
 }
-#archive-carousel::-webkit-scrollbar {
-  display: none;
-}
+#archive-carousel::-webkit-scrollbar { display: none; }
 .archive-card {
   flex: 0 0 auto;
   width: 260px;
@@ -131,20 +171,16 @@ button:hover { background: #00ffff; }
   scroll-snap-align: center;
   text-align: left;
 }
-.archive-card:last-child {
-  margin-right: 30px;
-}
+.archive-card:last-child { margin-right: 30px; }
 .archive-card img { width: 100%; border-radius: 8px; cursor: pointer; }
 .archive-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
 .like-btn { cursor: pointer; color: #00ffff; font-size: 0.9em; transition: 0.15s; }
 .like-btn:hover { color: #fff; transform: scale(1.1); }
 .duration-tag { font-size: 0.85em; color: #00bfff; }
 
-/* 📱 MOBILE */
 @media (max-width: 900px) {
   .stream-wrapper { flex-direction: column; align-items: center; width: 100%; }
   #chat { width: 95%; max-height: 400px; }
-  .button-row { justify-content: center; padding-right: 0; }
 }
 </style>
 
@@ -181,6 +217,17 @@ button:hover { background: #00ffff; }
         <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
           <img src="sub.png" alt="Subscribe" class="live" />
         </a>
+        <!-- 🧊 3D Model CTA -->
+        <a href="https://yourdestinationlink.com" target="_blank" class="n9ne-model">
+          <model-viewer
+            src="compressed.glb"
+            alt="N9ne 3D"
+            auto-rotate
+            camera-controls
+            disable-zoom
+            ar>
+          </model-viewer>
+        </a>
       </div>
     </div>
 
@@ -209,81 +256,6 @@ button:hover { background: #00ffff; }
 const layers=[{id:'layer1',count:40,size:1,speed:.3},{id:'layer2',count:30,size:2,speed:.2},{id:'layer3',count:20,size:3,speed:.1}];
 layers.forEach(l=>{const c=document.getElementById(l.id);for(let i=0;i<l.count;i++){const s=document.createElement('div');s.classList.add('star');s.style.width=`${l.size}px`;s.style.height=`${l.size}px`;s.style.left=`${Math.random()*100}vw`;s.style.top=`${Math.random()*100}vh`;const d=(Math.random()*10+10)/l.speed;const delay=Math.random()*20;s.style.animation=`fall ${d}s linear ${delay}s infinite`;c.appendChild(s);}});
 const style=document.createElement('style');style.innerHTML=`@keyframes fall{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(100vh);opacity:.3;}}`;document.head.appendChild(style);
-</script>
-
-<!-- 💬 Supabase Chat -->
-<script>
-const { createClient } = supabase;
-const db = createClient(
- 'https://kidmxnxkhyhaehzexatm.supabase.co',
- 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U'
-);
-const chatBox=document.getElementById('chat-box');const usernameInput=document.getElementById('username');const msgInput=document.getElementById('msg');const sendBtn=document.getElementById('send');
-const clientId=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).substring(2);
-function formatTime(iso){const d=new Date(iso);return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
-function addMessage(m){const div=document.createElement('div');div.classList.add('msg');div.innerHTML=`<span class="user">${m.username}:</span> ${m.text}<span class="time">${formatTime(m.created_at)}</span>`;chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;}
-async function loadMessages(){const {data,error}=await db.from('messages').select('*').order('created_at',{ascending:true});if(error)return console.error(error);chatBox.innerHTML='';data.forEach(addMessage);}
-sendBtn.onclick=async()=>{const username=usernameInput.value.trim()||'Anon';const text=msgInput.value.trim();if(!text)return;await db.from('messages').insert([{username,text,client_id:clientId}]);msgInput.value='';};
-db.channel('public:messages').on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},p=>{if(p.new.client_id!==clientId)addMessage(p.new);}).subscribe();
-loadMessages();
-</script>
-
-<!-- 🎞 Previous Streams Carousel Script -->
-<script>
-async function loadArchives() {
-  const container = document.getElementById('archive-carousel');
-  container.innerHTML = '<p style="color:#00bfff;">Loading streams...</p>';
-  try {
-    const muxRes = await fetch('https://channeln9ne.xyz/api/get-mux-streams');
-    const muxStreams = await muxRes.json();
-    const { data: localData } = await db.from('archives').select('mux_asset_id, id, likes, views');
-    const localMap = {}; if (localData) localData.forEach(r => (localMap[r.mux_asset_id] = r));
-    container.innerHTML = '';
-    muxStreams.forEach((stream) => {
-      const local = localMap[stream.mux_asset_id] || {};
-      const likeCount = local.likes || 0;
-      const localId = local.id || null;
-      const thumb = stream.thumbnail_url;
-      const card=document.createElement('div');
-      card.classList.add('archive-card');
-      card.innerHTML=`
-        <img src="${thumb}" alt="${stream.title}" onclick="openMuxPlayer('${stream.playback_id}', '${stream.title}', '${localId}')">
-        <div class="archive-meta">
-          <span>${stream.views} 👁️</span>
-          <span class="duration-tag">⏱️ ${stream.duration}</span>
-          <span class="like-btn" data-id="${localId}">❤️ ${likeCount}</span>
-        </div>
-        <div class="archive-title">${stream.title}</div>`;
-      container.appendChild(card);
-    });
-    document.querySelectorAll('.like-btn').forEach(btn=>{
-      btn.addEventListener('click', async()=>{
-        const id=btn.getAttribute('data-id');
-        if(!id)return;
-        const {data,error}=await db.rpc('increment_likes',{stream_id:id});
-        if(!error&&data)btn.textContent=`❤️ ${data}`;
-      });
-    });
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = '<p style="color:red;">Error loading streams.</p>';
-  }
-}
-function openMuxPlayer(playbackId,title,id){
-  db.rpc('increment_views',{stream_id:id});
-  const modal=document.createElement('div');
-  modal.id='mux-modal';
-  modal.innerHTML=`
-    <div id="modal-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999;">
-      <div style="width:80%;max-width:800px;">
-        <mux-player stream-type="on-demand" playback-id="${playbackId}" primary-color="#00bfff" metadata-video-title="${title}" autoplay></mux-player>
-        <button onclick="closeMuxModal()" style="margin-top:10px;background:#00bfff;border:none;padding:8px 16px;border-radius:5px;font-weight:bold;cursor:pointer;">Close</button>
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-}
-function closeMuxModal(){const modal=document.getElementById('mux-modal');if(modal)modal.remove();}
-loadArchives();
 </script>
 </body>
 </html>
