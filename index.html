@@ -15,11 +15,7 @@ html, body {
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
 }
-
-body {
-  min-height: 100vh;
-  position: relative;
-}
+body { min-height: 100vh; position: relative; }
 
 /* ✨ Stars */
 .star-layer {
@@ -85,10 +81,7 @@ body {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.3);
 }
-mux-player {
-  width: 100%;
-  height: 100%;
-}
+mux-player { width: 100%; height: 100%; }
 
 /* BUTTONS */
 .button-row {
@@ -175,6 +168,57 @@ button {
 }
 button:hover { background: #00ffff; }
 
+/* 🎥 Previous Streams */
+#archive-section {
+  margin-top: 50px;
+  width: 95%;
+  max-width: 1200px;
+  text-align: center;
+  color: #00bfff;
+}
+#archive-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 30px 20px 30px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 30px;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+#archive-carousel::-webkit-scrollbar { display: none; }
+.archive-card {
+  flex: 0 0 auto;
+  width: 260px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 0 6px rgba(0,255,255,0.3);
+  scroll-snap-align: center;
+  text-align: left;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.archive-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(0,255,255,0.5);
+}
+.archive-card img {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.archive-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.duration-tag {
+  font-size: 0.85em;
+  color: #00bfff;
+}
+
 /* 📱 MOBILE OPTIMIZATION */
 @media (max-width: 900px) {
   #content { padding: 2vh 0 80px 0; }
@@ -195,24 +239,6 @@ button:hover { background: #00ffff; }
   #chat {
     width: 95%;
     max-height: 400px;
-  }
-  .n9ne-btn img {
-    width: 56px;
-    height: 56px;
-  }
-}
-@media (max-width: 600px) {
-  #content img {
-    width: 90%;
-    margin-bottom: 20px;
-  }
-  .n9ne-btn img {
-    width: 60px;
-    height: 60px;
-  }
-  #chat {
-    width: 90%;
-    max-height: 350px;
   }
 }
 </style>
@@ -242,7 +268,6 @@ button:hover { background: #00ffff; }
         </mux-player>
       </div>
 
-      <!-- 🚀 Buttons below stream (right side) -->
       <div class="button-row">
         <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
           <img src="venmo.png" alt="Venmo" class="live" />
@@ -266,6 +291,13 @@ button:hover { background: #00ffff; }
         <button id="send">Send</button>
       </div>
     </div>
+  </div>
+
+  <!-- 🎥 Previous Streams Section -->
+  <hr style="width:80%; border: 1px solid rgba(0,255,255,0.2); margin: 40px auto;">
+  <div id="archive-section">
+    <h2>Previous Streams</h2>
+    <div id="archive-carousel"></div>
   </div>
 </div>
 
@@ -339,5 +371,44 @@ db.channel('public:messages')
  .subscribe();
 loadMessages();
 </script>
+
+<!-- 🎥 Previous Streams Loader -->
+<script>
+async function loadArchives() {
+  try {
+    const res = await fetch('https://channeln9ne.xyz/api/get-mux-streams');
+    if (!res.ok) throw new Error('Failed to load streams');
+    const streams = await res.json();
+    const container = document.getElementById('archive-carousel');
+    container.innerHTML = '';
+    if (!streams.length) {
+      container.innerHTML = '<p style="color:#888">No past streams found.</p>';
+      return;
+    }
+    streams.forEach(stream => {
+      const card = document.createElement('div');
+      card.classList.add('archive-card');
+      card.innerHTML = `
+        <img src="${stream.thumbnail_url}" alt="${stream.title}"
+             onclick="window.open('https://stream.mux.com/${stream.playback_id}.m3u8','_blank')" />
+        <div class="archive-meta">
+          <span>${stream.title}</span>
+        </div>
+        <div class="archive-meta">
+          <span class="duration-tag">${Math.round(stream.duration / 60)} min</span>
+          <span>👁️ ${stream.views}</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Error loading streams:', err);
+    document.getElementById('archive-carousel').innerHTML =
+      '<p style="color:#f66">Error loading previous streams.</p>';
+  }
+}
+loadArchives();
+</script>
+
 </body>
 </html>
