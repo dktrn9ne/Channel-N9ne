@@ -74,29 +74,34 @@ mux-player { width: 100%; height: 100%; }
   animation: pulseGlow 2.5s infinite;
 }
 
-/* 🧊 3D MODEL — optimized viewer */
+/* 🧊 3D MODEL — 3× larger */
 .n9ne-model {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
+  width: 132px; /* 3× larger */
+  height: 132px;
+  border-radius: 12px;
   background: transparent;
   transition: transform 0.3s ease;
+  transform-origin: center bottom; /* keeps it visually aligned */
+  margin-top: -40px; /* tucks it closer to the buttons */
 }
+
 .n9ne-model:hover {
-  transform: scale(1.12);
+  transform: scale(1.05);
 }
+
 model-viewer {
   width: 100%;
   height: 100%;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   box-shadow: none;
   filter: none;
 }
+
 
 /* 📱 MOBILE ADJUSTMENT */
 @media (max-width: 900px) {
