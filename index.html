@@ -74,35 +74,30 @@ mux-player { width: 100%; height: 100%; }
   animation: pulseGlow 2.5s infinite;
 }
 
-/* 3D MODEL STYLING */
+/* 🧊 3D MODEL — no glow, larger size */
 .n9ne-model {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 140px; /* Larger model container */
+  height: 140px;
   border-radius: 10px;
-  background: rgba(0,255,255,0.05);
-  box-shadow: 0 0 6px rgba(0,255,255,0.3);
-  transition: all 0.3s ease;
+  background: transparent;
+  transition: transform 0.3s ease;
 }
 
 .n9ne-model:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0,255,255,0.6);
+  transform: scale(1.05);
 }
 
 model-viewer {
-  width: 38px;
-  height: 38px;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 0 3px rgba(0,255,255,0.5));
-}
-
-model-viewer:hover {
-  filter: drop-shadow(0 0 6px rgba(0,255,255,0.9));
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
 }
 
 /* 📱 MOBILE ADJUSTMENT */
@@ -117,12 +112,8 @@ model-viewer:hover {
     height: 24px;
   }
   .n9ne-model {
-    width: 32px;
-    height: 32px;
-  }
-  model-viewer {
-    width: 30px;
-    height: 30px;
+    width: 100px;
+    height: 100px;
   }
 }
 
