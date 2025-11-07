@@ -41,26 +41,31 @@ export default async function handler(req, res) {
         if (!asset.playback_ids?.length) return null;
         const playbackId = asset.playback_ids[0].id;
 
-        // 🎯  Views (Data API → fallback to /stats)
+        // 🎯  Views using /data/v1/video-views
         let totalViews = 0;
         try {
-          const dataRes = await fetch(
-            `https://api.mux.com/data/v1/metrics/views?filters[]=asset_id:${asset.id}`,
+          const viewsRes = await fetch(
+            `https://api.mux.com/data/v1/video-views?filters[]=asset_id:${asset.id}&timeframe[]=30:days&limit=100`,
             { headers: { Authorization: authHeader } }
           );
-          const { data } = await dataRes.json();
-          totalViews = data?.[0]?.total_views || 0;
 
-          if (!totalViews) {
-            const statsRes = await fetch(
-              `https://api.mux.com/video/v1/assets/${asset.id}/stats`,
-              { headers: { Authorization: authHeader } }
+          if (viewsRes.ok) {
+            const json = await viewsRes.json();
+
+            if (Array.isArray(json.data)) {
+              totalViews = json.data.length;
+            } else if (json.data) {
+              totalViews = 1;
+            } else {
+              totalViews = 0;
+            }
+          } else {
+            console.warn(
+              `Video views API error ${viewsRes.status}: ${viewsRes.statusText}`
             );
-            const { data: stats } = await statsRes.json();
-            totalViews = stats?.view_count || 0;
           }
-        } catch {
-          console.warn(`Analytics fetch failed for asset ${asset.id}`);
+        } catch (err) {
+          console.warn(`Video views fetch failed for ${asset.id}`, err);
         }
 
         // 🕒  Normalize & validate date
