@@ -25,31 +25,45 @@ export default async function handler(req, res) {
     });
     const { data: assets = [] } = await assetRes.json();
 
-    // Sort newest first
-    assets.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    // 🧹 Deduplicate by asset ID and sort newest first
+    const uniqueAssets = Array.from(
+      new Map(assets.map((a) => [a.id, a])).values()
+    ).sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
-    // 2️⃣ For each asset, fetch analytics from Mux Data
+    // 2️⃣ Enrich with analytics
     const enriched = await Promise.all(
-      assets.map(async (asset) => {
+      uniqueAssets.map(async (asset) => {
         if (!asset.playback_ids?.length) return null;
         const playbackId = asset.playback_ids[0].id;
 
         // 🎯 Fetch Mux Data metrics (views)
-        const dataRes = await fetch(
-          `https://api.mux.com/data/v1/metrics/views?filters[]=asset_id:${asset.id}`,
-          { headers: { Authorization: authHeader } }
-        );
-        const { data } = await dataRes.json();
-        const totalViews = data?.[0]?.total_views || 0;
+        let totalViews = 0;
+        try {
+          const dataRes = await fetch(
+            `https://api.mux.com/data/v1/metrics/views?filters[]=asset_id:${asset.id}`,
+            { headers: { Authorization: authHeader } }
+          );
+          const { data } = await dataRes.json();
+          totalViews = data?.[0]?.total_views || 0;
+        } catch (err) {
+          console.warn(`Analytics fetch failed for asset ${asset.id}`);
+        }
 
-        // 🕒 Fix date (Mux returns UNIX seconds)
-        const createdAt = asset.created_at
-          ? new Date(asset.created_at * 1000)
-          : new Date();
+        // 🕒 Fix date (handle both UNIX and ISO)
+        const createdAt =
+          typeof asset.created_at === 'number'
+            ? new Date(asset.created_at * 1000)
+            : new Date(asset.created_at);
+
+        // 🕒 Safe duration
+        const durationSeconds = Number(asset.duration);
+        const duration = formatDuration(!isNaN(durationSeconds) ? durationSeconds : 0);
 
         // 🖼️ Thumbnail + Title fallback
         const title =
-          asset.name ||
+          asset.name?.trim() ||
           `Stream from ${createdAt.toLocaleDateString(undefined, {
             month: 'short',
             day: 'numeric',
@@ -65,14 +79,17 @@ export default async function handler(req, res) {
           title,
           playback_id: playbackId,
           thumbnail_url: thumbnailUrl,
-          duration: formatDuration(asset.duration),
+          duration,
           views: totalViews,
           created_at: createdAt,
         };
       })
     );
 
-    res.status(200).json(enriched.filter(Boolean));
+    // Filter valid items only
+    const cleaned = enriched.filter(Boolean);
+
+    res.status(200).json(cleaned);
   } catch (error) {
     console.error('Mux API Error:', error);
     res
