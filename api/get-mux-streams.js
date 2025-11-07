@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     "Basic " +
     Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString("base64");
 
-  // ⏱️ Format seconds → "1h 02m" or "59m 58s"
+  // ⏱️ Format seconds → "1h 02m" or "59 m 58 s"
   function formatDuration(seconds) {
     if (!seconds || isNaN(seconds)) return "—";
     const hrs = Math.floor(seconds / 3600);
@@ -20,14 +20,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1️⃣ Get latest Mux assets
+    // 1️⃣  Fetch latest Mux assets
     const assetRes = await fetch(
       "https://api.mux.com/video/v1/assets?limit=20",
       { headers: { Authorization: authHeader } }
     );
     const { data: assets = [] } = await assetRes.json();
 
-    // 🧹 Deduplicate & sort newest first
+    // 🧹  Deduplicate and sort newest first
     const uniqueAssets = Array.from(
       new Map(assets.map((a) => [a.id, a])).values()
     ).sort(
@@ -35,13 +35,13 @@ export default async function handler(req, res) {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-    // 2️⃣ Enrich each asset
+    // 2️⃣  Enrich each asset
     const enriched = await Promise.all(
       uniqueAssets.map(async (asset) => {
         if (!asset.playback_ids?.length) return null;
         const playbackId = asset.playback_ids[0].id;
 
-        // 🎯 Analytics
+        // 🎯  Views (Data API → fallback to /stats)
         let totalViews = 0;
         try {
           const dataRes = await fetch(
@@ -50,11 +50,20 @@ export default async function handler(req, res) {
           );
           const { data } = await dataRes.json();
           totalViews = data?.[0]?.total_views || 0;
+
+          if (!totalViews) {
+            const statsRes = await fetch(
+              `https://api.mux.com/video/v1/assets/${asset.id}/stats`,
+              { headers: { Authorization: authHeader } }
+            );
+            const { data: stats } = await statsRes.json();
+            totalViews = stats?.view_count || 0;
+          }
         } catch {
           console.warn(`Analytics fetch failed for asset ${asset.id}`);
         }
 
-        // 🕒 Normalize date
+        // 🕒  Normalize & validate date
         let createdAt;
         if (asset.created_at) {
           const ts = Number(asset.created_at);
@@ -67,7 +76,7 @@ export default async function handler(req, res) {
         const isValidDate = createdAt instanceof Date && !isNaN(createdAt);
         if (!isValidDate) createdAt = new Date();
 
-        // 🕒 Normalize duration
+        // 🕒  Normalize duration
         const rawDuration = asset.duration;
         const durationSeconds =
           typeof rawDuration === "string"
@@ -78,7 +87,7 @@ export default async function handler(req, res) {
             ? formatDuration(durationSeconds)
             : "—";
 
-        // 🖼️ Title & thumbnail
+        // 🖼️  Title & thumbnail
         const title =
           asset.name?.trim() ||
           (isValidDate
