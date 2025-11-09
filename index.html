@@ -146,7 +146,7 @@ db.channel('public:messages')
 loadMessages();
 </script>
 
-<!-- 🎥 Previous Streams Loader (fixed for string durations + modal) -->
+<!-- 🎥 Previous Streams Loader with Playback Modal -->
 <script>
 async function loadArchives() {
   try {
@@ -155,23 +155,24 @@ async function loadArchives() {
     let streams = await res.json();
     const container = document.getElementById('archive-carousel');
     container.innerHTML = '';
-
     if (!Array.isArray(streams) || !streams.length) {
       container.innerHTML = '<p style="color:#888">No past streams found.</p>';
       return;
     }
 
-    // Sort newest first
+    // Sort newest first (based on created_at)
     streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     streams.forEach(stream => {
-      // Handle string or number durations
+      // Handle both string and numeric durations safely
       let durationDisplay = '';
       if (typeof stream.duration === 'string') {
         durationDisplay = stream.duration;
       } else if (typeof stream.duration === 'number') {
         const mins = Math.floor(stream.duration / 60);
-        const secs = Math.floor(stream.duration % 60).toString().padStart(2, '0');
+        const secs = Math.floor(stream.duration % 60)
+          .toString()
+          .padStart(2, '0');
         durationDisplay = `${mins}m ${secs}s`;
       } else {
         durationDisplay = '—';
@@ -180,19 +181,7 @@ async function loadArchives() {
       const card = document.createElement('div');
       card.classList.add('archive-card');
       card.innerHTML = `
-        <div style="position:relative;">
-          <img src="${stream.thumbnail_url}" alt="${stream.title}" />
-          <div style="
-            position:absolute;
-            bottom:8px;
-            right:8px;
-            background:rgba(0,0,0,0.6);
-            color:#00ffff;
-            padding:4px 8px;
-            border-radius:6px;
-            font-size:0.85em;
-          ">▶ Watch Replay</div>
-        </div>
+        <img src="${stream.thumbnail_url}" alt="${stream.title}" />
         <div class="archive-meta">
           <span>${stream.title}</span>
         </div>
@@ -201,8 +190,8 @@ async function loadArchives() {
           <span>👁️ ${stream.views}</span>
         </div>
       `;
+      // Click opens the secure modal playback
       card.querySelector('img').addEventListener('click', () => openPlayback(stream.playback_id, stream.title));
-      card.querySelector('div[style*="▶"]').addEventListener('click', () => openPlayback(stream.playback_id, stream.title));
       container.appendChild(card);
     });
   } catch (err) {
@@ -232,39 +221,6 @@ document.getElementById('close-modal').addEventListener('click', () => {
 loadArchives();
 </script>
 
-<!-- 🎬 Playback Modal -->
-<div id="playback-modal" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.9);
-  z-index:9999;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  padding:20px;
-">
-  <button id="close-modal" style="
-    align-self:flex-end;
-    background:none;
-    border:none;
-    color:#00ffff;
-    font-size:1.5em;
-    cursor:pointer;
-    margin-bottom:10px;
-  ">✖</button>
-  <div class="mux-player-container" style="width:90%; max-width:900px;">
-    <mux-player
-      id="archive-player"
-      stream-type="on-demand"
-      primary-color="#00bfff"
-      metadata-video-title="Previous Stream"
-      playsinline
-      controls>
-    </mux-player>
-  </div>
-</div>
 
 </body>
 </html>
