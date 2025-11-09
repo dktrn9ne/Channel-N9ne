@@ -363,4 +363,52 @@ sendBtn.onclick=async()=>{
   const text=msgInput.value.trim();
   if(!text)return;
   await db.from('messages').insert([{username,text,client_id:clientId}]);
-  ms
+  msgInput.value='';
+};
+db.channel('public:messages')
+ .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},
+   p=>{if(p.new.client_id!==clientId)addMessage(p.new);})
+ .subscribe();
+loadMessages();
+</script>
+
+<!-- 🎥 Previous Streams Loader -->
+<script>
+async function loadArchives() {
+  try {
+    const res = await fetch('https://channeln9ne.xyz/api/get-mux-streams');
+    if (!res.ok) throw new Error('Failed to load streams');
+    const streams = await res.json();
+    const container = document.getElementById('archive-carousel');
+    container.innerHTML = '';
+    if (!streams.length) {
+      container.innerHTML = '<p style="color:#888">No past streams found.</p>';
+      return;
+    }
+    streams.forEach(stream => {
+      const card = document.createElement('div');
+      card.classList.add('archive-card');
+      card.innerHTML = `
+        <img src="${stream.thumbnail_url}" alt="${stream.title}"
+             onclick="window.open('https://stream.mux.com/${stream.playback_id}.m3u8','_blank')" />
+        <div class="archive-meta">
+          <span>${stream.title}</span>
+        </div>
+        <div class="archive-meta">
+          <span class="duration-tag">${Math.round(stream.duration / 60)} min</span>
+          <span>👁️ ${stream.views}</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Error loading streams:', err);
+    document.getElementById('archive-carousel').innerHTML =
+      '<p style="color:#f66">Error loading previous streams.</p>';
+  }
+}
+loadArchives();
+</script>
+
+</body>
+</html>
