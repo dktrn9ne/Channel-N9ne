@@ -6,7 +6,6 @@
 <title>Channel N9NE Live</title>
 
 <style>
-/* (same CSS as before — unchanged for brevity) */
 html, body {
   margin: 0;
   padding: 0;
@@ -17,7 +16,231 @@ html, body {
   overflow-x: hidden;
 }
 body { min-height: 100vh; position: relative; }
-/* ... rest of your CSS unchanged ... */
+
+/* ✨ Stars */
+.star-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+}
+
+/* Layout */
+#content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5vh 0 100px 0;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#content img {
+  width: 80%;
+  max-width: 600px;
+  height: auto;
+  margin-bottom: 30px;
+}
+
+/* STREAM + CHAT */
+.stream-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 95%;
+  max-width: 1200px;
+  box-sizing: border-box;
+}
+.stream-column {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mux-player-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+mux-player { width: 100%; height: 100%; }
+
+/* BUTTONS */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  width: 100%;
+  margin-top: 12px;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+.n9ne-btn img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transform: rotateX(12deg);
+  transition: all 0.25s ease;
+  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
+  opacity: 0.95;
+}
+.n9ne-btn img:hover {
+  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(0,255,255,1));
+  opacity: 1;
+}
+@keyframes pulseGlow {
+  0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));}
+  50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
+}
+.n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
+
+/* CHAT */
+#chat {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  max-height: 80vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  color: #00bfff;
+}
+#chat-box {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+.msg { margin-bottom: 6px; line-height: 1.4; }
+.user { color: #00ffff; font-weight: bold; }
+.time { color: #777; font-size: 0.8em; margin-left: 5px; }
+#chat-inputs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+input, button {
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+}
+input {
+  flex: 1;
+  background: #111;
+  color: #fff;
+}
+button {
+  background: #00bfff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: #00ffff; }
+
+/* 🎥 Previous Streams */
+#archive-section {
+  margin-top: 50px;
+  width: 95%;
+  max-width: 1200px;
+  text-align: center;
+  color: #00bfff;
+}
+#archive-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 30px 20px 30px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 30px;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+#archive-carousel::-webkit-scrollbar { display: none; }
+.archive-card {
+  flex: 0 0 auto;
+  width: 260px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 0 6px rgba(0,255,255,0.3);
+  scroll-snap-align: center;
+  text-align: left;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.archive-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(0,255,255,0.5);
+}
+.archive-card img {
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.archive-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.duration-tag {
+  font-size: 0.85em;
+  color: #00bfff;
+}
+
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 900px) {
+  #content { padding: 2vh 0 80px 0; }
+  .stream-wrapper {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .stream-column {
+    align-items: center;
+    width: 100%;
+  }
+  .button-row {
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 10px;
+  }
+  #chat {
+    width: 95%;
+    max-height: 400px;
+  }
+}
 </style>
 
 <script src="https://unpkg.com/@mux/mux-player"></script>
@@ -80,8 +303,11 @@ body { min-height: 100vh; position: relative; }
 
 <!-- ✨ Stars Script -->
 <script>
-/* (same stars background logic — unchanged) */
-const layers=[{id:'layer1',count:40,size:1,speed:.3},{id:'layer2',count:30,size:2,speed:.2},{id:'layer3',count:20,size:3,speed:.1}];
+const layers=[
+ {id:'layer1',count:40,size:1,speed:.3},
+ {id:'layer2',count:30,size:2,speed:.2},
+ {id:'layer3',count:20,size:3,speed:.1}
+];
 layers.forEach(l=>{
  const c=document.getElementById(l.id);
  for(let i=0;i<l.count;i++){
@@ -137,90 +363,4 @@ sendBtn.onclick=async()=>{
   const text=msgInput.value.trim();
   if(!text)return;
   await db.from('messages').insert([{username,text,client_id:clientId}]);
-  msgInput.value='';
-};
-db.channel('public:messages')
- .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},
-   p=>{if(p.new.client_id!==clientId)addMessage(p.new);})
- .subscribe();
-loadMessages();
-</script>
-
-<!-- 🎥 Previous Streams Loader with Playback Modal -->
-<script>
-async function loadArchives() {
-  try {
-    const res = await fetch('https://channeln9ne.xyz/api/get-mux-streams');
-    if (!res.ok) throw new Error('Failed to load streams');
-    let streams = await res.json();
-    const container = document.getElementById('archive-carousel');
-    container.innerHTML = '';
-    if (!Array.isArray(streams) || !streams.length) {
-      container.innerHTML = '<p style="color:#888">No past streams found.</p>';
-      return;
-    }
-
-    // Sort newest first (based on created_at)
-    streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    streams.forEach(stream => {
-      // Handle both string and numeric durations safely
-      let durationDisplay = '';
-      if (typeof stream.duration === 'string') {
-        durationDisplay = stream.duration;
-      } else if (typeof stream.duration === 'number') {
-        const mins = Math.floor(stream.duration / 60);
-        const secs = Math.floor(stream.duration % 60)
-          .toString()
-          .padStart(2, '0');
-        durationDisplay = `${mins}m ${secs}s`;
-      } else {
-        durationDisplay = '—';
-      }
-
-      const card = document.createElement('div');
-      card.classList.add('archive-card');
-      card.innerHTML = `
-        <img src="${stream.thumbnail_url}" alt="${stream.title}" />
-        <div class="archive-meta">
-          <span>${stream.title}</span>
-        </div>
-        <div class="archive-meta">
-          <span class="duration-tag">${durationDisplay}</span>
-          <span>👁️ ${stream.views}</span>
-        </div>
-      `;
-      // Click opens the secure modal playback
-      card.querySelector('img').addEventListener('click', () => openPlayback(stream.playback_id, stream.title));
-      container.appendChild(card);
-    });
-  } catch (err) {
-    console.error('Error loading streams:', err);
-    document.getElementById('archive-carousel').innerHTML =
-      '<p style="color:#f66">Error loading previous streams.</p>';
-  }
-}
-
-function openPlayback(playbackId, title) {
-  const modal = document.getElementById('playback-modal');
-  const player = document.getElementById('archive-player');
-  player.setAttribute('playback-id', playbackId);
-  player.setAttribute('metadata-video-title', title);
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-document.getElementById('close-modal').addEventListener('click', () => {
-  const modal = document.getElementById('playback-modal');
-  const player = document.getElementById('archive-player');
-  player.pause();
-  modal.style.display = 'none';
-  document.body.style.overflow = 'auto';
-});
-
-loadArchives();
-</script>
-
-
-</body>
-</html>
+  ms
