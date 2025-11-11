@@ -449,19 +449,41 @@ async function loadArchives() {
       : defaultEndpoint;
 
   try {
-    let res = await fetch(originEndpoint);
+    let streams = null;
+    let lastError = null;
 
-    // Some hosts may block cross-origin requests; fall back to the public endpoint.
-    if (!res.ok) {
-      console.warn(`Archive fetch failed (${res.status}). Falling back to default endpoint.`);
-      res = await fetch(defaultEndpoint);
+    for (const endpoint of candidates) {
+      try {
+        const res = await fetch(endpoint, {
+          headers: { Accept: "application/json" },
+          mode: "cors",
+        });
+        if (!res.ok) {
+          lastError = new Error(`Request to ${endpoint} failed with status ${res.status}`);
+          continue;
+        }
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+          lastError = new Error(`Unexpected response shape from ${endpoint}`);
+          continue;
+        }
+        streams = data;
+        break;
+      } catch (err) {
+        lastError = err;
+      }
     }
 
-    if (!res.ok) throw new Error(`Failed to load streams (status ${res.status})`);
-    const streams = await res.json();
-    const container = document.getElementById("archive-carousel");
+    if (!streams) {
+      throw lastError || new Error("Previous streams could not be loaded");
+    }
+
+    if (!container) {
+      return;
+    }
+
     container.innerHTML = "";
-    if (!Array.isArray(streams) || streams.length === 0) {
+    if (streams.length === 0) {
       container.innerHTML = '<p style="color:#888">No past streams found.</p>';
       return;
     }
