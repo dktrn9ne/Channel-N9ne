@@ -22,6 +22,12 @@ export default async function handler(req, res) {
     const assetRes = await fetch("https://api.mux.com/video/v1/assets?limit=50", {
       headers: { Authorization: authHeader },
     });
+
+    if (!assetRes.ok) {
+      const text = await assetRes.text();
+      throw new Error(`Mux responded with ${assetRes.status}: ${text || assetRes.statusText}`);
+    }
+
     const { data: assets = [] } = await assetRes.json();
 
     const readyAssets = assets

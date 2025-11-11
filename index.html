@@ -27,13 +27,33 @@ body { min-height: 100vh; position: relative; }
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  transform-style: preserve-3d;
+  --offset-x: 0px;
+  --offset-y: 0px;
+  --pulse-translate: 0px;
+  --pulse-scale: 1;
+  transform: translate3d(calc(var(--offset-x)), calc(var(--offset-y) + var(--pulse-translate)), 0) scale(var(--pulse-scale));
+  animation: layerPulse 60s ease-in-out infinite;
 }
 .star {
   position: absolute;
-  background: white;
+  background: radial-gradient(circle at 35% 35%, #fff, rgba(255,255,255,0.4) 55%, transparent 70%);
   border-radius: 50%;
-  opacity: 0.8;
-  box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px rgba(0, 200, 255, 0.65));
+  mix-blend-mode: screen;
+  --scale-base: 1;
+  --scale-start: 0.9;
+  --scale-mid: 1.05;
+  --drift-x: 0px;
+  --drift-y: 0px;
+  --drift-z: 0px;
+  --twinkle-duration: 6s;
+  --twinkle-delay: 0s;
+  --drift-duration: 120s;
+  --drift-delay: 0s;
+  animation: twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite,
+             drift var(--drift-duration) linear var(--drift-delay) infinite;
 }
 
 /* Layout */
@@ -86,16 +106,26 @@ mux-player { width: 100%; height: 100%; }
 /* BUTTONS */
 .button-row {
   display: flex;
-  justify-content: flex-end;
-  gap: 14px;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: clamp(14px, 2.4vw, 28px);
   width: 100%;
-  margin-top: 12px;
-  padding-right: 12px;
+  margin-top: 16px;
+  padding: 0 clamp(6px, 2vw, 18px);
   box-sizing: border-box;
 }
+.n9ne-btn {
+  flex: 0 1 clamp(80px, 18vw, 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+  cursor: pointer;
+}
 .n9ne-btn img {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: auto;
   object-fit: contain;
   transform: rotateX(12deg);
   transition: all 0.25s ease;
@@ -142,9 +172,35 @@ mux-player { width: 100%; height: 100%; }
   padding: 10px;
   border-bottom: 1px solid #333;
 }
-.msg { margin-bottom: 6px; line-height: 1.4; }
+.chat-status {
+  font-size: 0.85em;
+  color: #99cce6;
+  margin-bottom: 6px;
+  min-height: 1.2em;
+}
+.chat-status.success {
+  color: #68ffda;
+}
+.chat-status.error {
+  color: #ff8a8a;
+}
+.msg {
+  margin-bottom: 6px;
+  line-height: 1.4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+.msg .message-text { color: #fff; }
 .user { color: #00ffff; font-weight: bold; }
 .time { color: #777; font-size: 0.8em; margin-left: 5px; }
+.chat-empty {
+  color: #9db3bf;
+  font-style: italic;
+  text-align: center;
+  margin: 16px 0;
+}
 #chat-inputs {
   display: flex;
   gap: 8px;
@@ -165,6 +221,10 @@ button {
   color: #000;
   font-weight: bold;
   cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 button:hover { background: #00ffff; }
 
@@ -304,6 +364,7 @@ button:hover { background: #00ffff; }
         <span>💬 Chat is Live</span>
         <span id="viewer-count">0 watching</span>
       </div>
+      <div id="chat-status" class="chat-status" role="status" aria-live="polite">Connecting…</div>
       <div id="chat-box"></div>
       <div id="chat-inputs">
         <input id="username" placeholder="Name"/>
@@ -324,9 +385,22 @@ button:hover { background: #00ffff; }
 <script>
 /* MUX ARCHIVES */
 async function loadArchives() {
+  const defaultEndpoint = "https://channeln9ne.xyz/api/get-mux-streams";
+  const originEndpoint =
+    typeof window !== "undefined" && window.location && window.location.origin
+      ? `${window.location.origin}/api/get-mux-streams`
+      : defaultEndpoint;
+
   try {
-    const res = await fetch("https://channeln9ne.xyz/api/get-mux-streams");
-    if (!res.ok) throw new Error("Failed to load streams");
+    let res = await fetch(originEndpoint);
+
+    // Some hosts may block cross-origin requests; fall back to the public endpoint.
+    if (!res.ok) {
+      console.warn(`Archive fetch failed (${res.status}). Falling back to default endpoint.`);
+      res = await fetch(defaultEndpoint);
+    }
+
+    if (!res.ok) throw new Error(`Failed to load streams (status ${res.status})`);
     const streams = await res.json();
     const container = document.getElementById("archive-carousel");
     container.innerHTML = "";
@@ -349,7 +423,11 @@ async function loadArchives() {
       card.addEventListener("click",()=>openPlayback(s.playback_id,safeTitle));
       container.appendChild(card);
     });
-  } catch(e){console.error(e);}
+  } catch(e){
+    console.error(e);
+    const container = document.getElementById("archive-carousel");
+    container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
+  }
 }
 function openPlayback(id,title){
   const modal=document.getElementById("playback-modal");
@@ -374,63 +452,242 @@ const chatBox=document.getElementById("chat-box");
 const usernameInput=document.getElementById("username");
 const msgInput=document.getElementById("msg");
 const sendBtn=document.getElementById("send");
+const chatStatus=document.getElementById("chat-status");
+const viewerCount=document.getElementById("viewer-count");
 
-async function loadMessages(){
-  const {data,error}=await supabase.from("messages").select("*").order("created_at",{ascending:true}).limit(50);
-  if(error)console.error(error);
-  else{
+let isConnected=false;
+let isSending=false;
+
+function updateViewerLabel(label){
+  if(viewerCount) viewerCount.textContent=label;
+}
+
+function setChatStatus(message,tone="info"){
+  if(!chatStatus)return;
+  chatStatus.textContent=message;
+  chatStatus.classList.remove("success","error");
+  if(tone==="success") chatStatus.classList.add("success");
+  else if(tone==="error") chatStatus.classList.add("error");
+}
+
+function showEmptyState(){
+  if(!chatBox)return;
+  chatBox.innerHTML='<p class="chat-empty">Be the first to say hello ✨</p>';
+  chatBox.dataset.empty="true";
+}
+
+function clearEmptyState(){
+  if(chatBox?.dataset.empty){
     chatBox.innerHTML="";
-    data.forEach(addMessage);
-    chatBox.scrollTop=chatBox.scrollHeight;
+    delete chatBox.dataset.empty;
   }
 }
-function addMessage(m){
+
+function addMessage(message){
+  if(!message||!chatBox)return;
+  clearEmptyState();
   const div=document.createElement("div");
   div.classList.add("msg");
-  const time=new Date(m.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-  div.innerHTML=`<span class="user">${m.username}</span>: ${m.text} <span class="time">${time}</span>`;
+
+  const nameSpan=document.createElement("span");
+  nameSpan.classList.add("user");
+  nameSpan.textContent=message.username?.trim()||"Guest";
+
+  const textSpan=document.createElement("span");
+  textSpan.classList.add("message-text");
+  textSpan.textContent=message.text||"";
+
+  const timeSpan=document.createElement("span");
+  timeSpan.classList.add("time");
+  const created=message.created_at?new Date(message.created_at):new Date();
+  if(!Number.isNaN(created.getTime())){
+    timeSpan.textContent=created.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  }
+
+  div.appendChild(nameSpan);
+  div.appendChild(document.createTextNode(": "));
+  div.appendChild(textSpan);
+  div.appendChild(timeSpan);
   chatBox.appendChild(div);
-}
-sendBtn.addEventListener("click",async()=>{
-  const username=usernameInput.value.trim()||"Guest";
-  const text=msgInput.value.trim();
-  if(!text)return;
-  const {error}=await supabase.from("messages").insert([{username,text}]);
-  if(error)console.error(error);
-  msgInput.value="";
-});
-msgInput.addEventListener("keypress",(e)=>{if(e.key==="Enter")sendBtn.click();});
-supabase.channel("public:messages")
-.on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},(p)=>{
-  addMessage(p.new);
   chatBox.scrollTop=chatBox.scrollHeight;
-}).subscribe();
+}
+
+function updateSendState(){
+  if(!sendBtn||!msgInput)return;
+  const hasText=msgInput.value.trim().length>0;
+  sendBtn.disabled=!isConnected||!hasText||isSending;
+}
+
+async function loadMessages(){
+  if(!chatBox)return;
+  try{
+    const {data,error}=await supabase.from("messages").select("*").order("created_at",{ascending:true}).limit(100);
+    if(error) throw error;
+    if(!data||data.length===0){
+      showEmptyState();
+    }else{
+      chatBox.innerHTML="";
+      data.forEach(addMessage);
+    }
+    if(!isConnected){
+      setChatStatus("Chat history loaded. Connecting…");
+      updateViewerLabel("Connecting…");
+    }
+  }catch(err){
+    console.error("Failed to load chat history",err);
+    setChatStatus("Unable to load chat history. Retrying…","error");
+    updateViewerLabel("Chat offline");
+    showEmptyState();
+    setTimeout(loadMessages,5000);
+  }
+}
+
+async function sendMessage(){
+  if(!sendBtn||!msgInput||!usernameInput)return;
+  const text=msgInput.value.trim();
+  if(!text||!isConnected||isSending)return;
+  const safeName=usernameInput.value.trim().slice(0,24)||"Guest";
+  isSending=true;
+  updateSendState();
+  const previousLabel=sendBtn.textContent;
+  sendBtn.textContent="Sending…";
+  try{
+    const {error}=await supabase.from("messages").insert([{username:safeName,text}]);
+    if(error) throw error;
+    msgInput.value="";
+    updateSendState();
+  }catch(err){
+    console.error("Failed to send message",err);
+    setChatStatus("Message failed to send. Please try again.","error");
+  }finally{
+    isSending=false;
+    sendBtn.textContent=previousLabel;
+    updateSendState();
+  }
+}
+
+if(msgInput){
+  msgInput.addEventListener("input",updateSendState);
+  msgInput.addEventListener("keydown",(event)=>{
+    if(event.key==="Enter"&&!event.shiftKey){
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+}
+if(sendBtn){
+  sendBtn.addEventListener("click",sendMessage);
+}
+
+setChatStatus("Connecting…");
+updateViewerLabel("Connecting…");
+showEmptyState();
+updateSendState();
 loadMessages();
 
+const messageChannel=supabase
+  .channel("public:messages")
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+    addMessage(payload.new);
+  });
+
+messageChannel
+  .subscribe((status)=>{
+    if(status==="SUBSCRIBED"){
+      isConnected=true;
+      setChatStatus("Connected. Say hello!","success");
+      updateViewerLabel("Chat online");
+      loadMessages();
+    }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+      isConnected=false;
+      setChatStatus("Connection lost. Reconnecting…","error");
+      updateViewerLabel("Chat offline");
+    }else if(status==="CLOSED"){
+      isConnected=false;
+      setChatStatus("Chat connection closed.","error");
+      updateViewerLabel("Chat offline");
+    }
+    updateSendState();
+  })
+  .catch((err)=>{
+    console.error("Failed to subscribe to chat updates",err);
+    isConnected=false;
+    setChatStatus("Chat unavailable. Please refresh.","error");
+    updateViewerLabel("Chat offline");
+    updateSendState();
+  });
+
 /* STARS */
-function createStars(layerId,count,sizeRange){
+function createStars(layerId,count,sizeRange,travelRange,driftDurationRange,twinkleRange){
   const layer=document.getElementById(layerId);
+  if(!layer) return;
+  layer.style.animationDuration=`${60+Math.random()*30}s`;
+  layer.style.animationDelay=`-${Math.random()*30}s`;
   for(let i=0;i<count;i++){
     const s=document.createElement("div");
     s.classList.add("star");
     const size=Math.random()*(sizeRange[1]-sizeRange[0])+sizeRange[0];
-    s.style.width=`${size}px`; s.style.height=`${size}px`;
-    s.style.top=`${Math.random()*100}%`; s.style.left=`${Math.random()*100}%`;
-    s.style.animation=`twinkle ${Math.random()*6+4}s ease-in-out ${Math.random()*5}s infinite, drift ${Math.random()*120+80}s linear infinite`;
+    s.style.width=`${size}px`;
+    s.style.height=`${size}px`;
+    s.style.top=`${Math.random()*100}%`;
+    s.style.left=`${Math.random()*100}%`;
+
+    const scale=(0.7+Math.random()*0.6).toFixed(2);
+    const scaleStart=(scale*0.85).toFixed(2);
+    const scaleMid=(scale*1.05).toFixed(2);
+    const angle=Math.random()*Math.PI*2;
+    const travel=Math.random()*(travelRange[1]-travelRange[0])+travelRange[0];
+    const depth=(Math.random()-0.5)*travel*0.3;
+    const driftDuration=(Math.random()*(driftDurationRange[1]-driftDurationRange[0])+driftDurationRange[0]).toFixed(2);
+    const twinkleDuration=(Math.random()*(twinkleRange[1]-twinkleRange[0])+twinkleRange[0]).toFixed(2);
+
+    s.style.setProperty("--scale-base",scale);
+    s.style.setProperty("--scale-start",scaleStart);
+    s.style.setProperty("--scale-mid",scaleMid);
+    s.style.setProperty("--drift-x",`${Math.cos(angle)*travel}px`);
+    s.style.setProperty("--drift-y",`${Math.sin(angle)*travel}px`);
+    s.style.setProperty("--drift-z",`${depth}px`);
+    s.style.setProperty("--drift-duration",`${driftDuration}s`);
+    s.style.setProperty("--drift-delay",`-${(Math.random()*driftDurationRange[1]).toFixed(2)}s`);
+    s.style.setProperty("--twinkle-duration",`${twinkleDuration}s`);
+    s.style.setProperty("--twinkle-delay",`-${(Math.random()*6).toFixed(2)}s`);
+
     layer.appendChild(s);
   }
 }
 const starStyle=document.createElement("style");
-starStyle.innerHTML=`@keyframes twinkle{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1.2);}}@keyframes drift{0%{transform:translate(0,0);}100%{transform:translate(-100px,100px);}}`;
+starStyle.innerHTML=`
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(0, 140, 255, 0.45)); }
+  45% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.95)); }
+  55% { opacity: 0.85; filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.7)); }
+}
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(var(--scale-start)); }
+  50% { transform: translate3d(calc(var(--drift-x) * 0.5), calc(var(--drift-y) * 0.5), calc(var(--drift-z) * 0.5)) scale(var(--scale-mid)); }
+  100% { transform: translate3d(var(--drift-x), var(--drift-y), var(--drift-z)) scale(var(--scale-base)); }
+}
+@keyframes layerPulse {
+  0%, 100% { --pulse-translate: 0px; --pulse-scale: 1; }
+  50% { --pulse-translate: -12px; --pulse-scale: 1.03; }
+}
+`;
 document.head.appendChild(starStyle);
-createStars("layer1",100,[1,2]);
-createStars("layer2",70,[2,3]);
-createStars("layer3",40,[3,4]);
+createStars("layer1",140,[1,2],[80,160],[90,140],[4,7]);
+createStars("layer2",95,[2,3],[140,240],[120,180],[5,8]);
+createStars("layer3",65,[3,4],[200,320],[160,220],[6,9]);
 document.addEventListener("mousemove",(e)=>{
-  const x=e.clientX/window.innerWidth-0.5, y=e.clientY/window.innerHeight-0.5;
-  document.getElementById("layer1").style.transform=`translate(${x*10}px,${y*10}px)`;
-  document.getElementById("layer2").style.transform=`translate(${x*20}px,${y*20}px)`;
-  document.getElementById("layer3").style.transform=`translate(${x*40}px,${y*40}px)`;
+  const x=e.clientX/window.innerWidth-0.5;
+  const y=e.clientY/window.innerHeight-0.5;
+  const layer1=document.getElementById("layer1");
+  const layer2=document.getElementById("layer2");
+  const layer3=document.getElementById("layer3");
+  layer1?.style.setProperty("--offset-x",`${x*10}px`);
+  layer1?.style.setProperty("--offset-y",`${y*10}px`);
+  layer2?.style.setProperty("--offset-x",`${x*20}px`);
+  layer2?.style.setProperty("--offset-y",`${y*20}px`);
+  layer3?.style.setProperty("--offset-x",`${x*40}px`);
+  layer3?.style.setProperty("--offset-y",`${y*40}px`);
 });
 </script>
 
