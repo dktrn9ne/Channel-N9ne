@@ -433,5 +433,52 @@ loadArchives();
   </div>
 </div>
 
+<!-- 🌌 Dynamic Starfield Script -->
+<script>
+function createStars(layerId, count, sizeRange) {
+  const layer = document.getElementById(layerId);
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement("div");
+    star.classList.add("star");
+    const size = Math.random() * (sizeRange[1] - sizeRange[0]) + sizeRange[0];
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.animation = `twinkle ${Math.random() * 6 + 4}s ease-in-out ${Math.random() * 5}s infinite,
+                            drift ${Math.random() * 120 + 80}s linear infinite`;
+    layer.appendChild(star);
+  }
+}
+
+// ✨ Add animations
+const starStyle = document.createElement('style');
+starStyle.innerHTML = `
+@keyframes twinkle {
+  0%,100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes drift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-100px, 100px); }
+}
+`;
+document.head.appendChild(starStyle);
+
+// 🌠 Generate stars
+createStars("layer1", 100, [1, 2]);
+createStars("layer2", 70, [2, 3]);
+createStars("layer3", 40, [3, 4]);
+
+// Parallax movement with cursor
+document.addEventListener("mousemove", (e) => {
+  const x = e.clientX / window.innerWidth - 0.5;
+  const y = e.clientY / window.innerHeight - 0.5;
+  document.getElementById("layer1").style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+  document.getElementById("layer2").style.transform = `translate(${x * 20}px, ${y * 20}px)`;
+  document.getElementById("layer3").style.transform = `translate(${x * 40}px, ${y * 40}px)`;
+});
+</script>
+
 </body>
 </html>
