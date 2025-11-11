@@ -497,7 +497,7 @@ async function loadArchives() {
     }
 
     streams
-      .filter(item => item && item.playback_id)
+      .filter(item => item && (item.playback_id || item.playback_url))
       .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
       .slice(0, 12)
       .forEach((s) => {
@@ -512,12 +512,20 @@ async function loadArchives() {
             });
         const duration = s.duration || "Duration unavailable";
         const viewCount = Number.isFinite(Number(s.views)) ? Number(s.views) : 0;
+        const embedSrc = s.playback_id
+          ? `https://player.mux.com/${s.playback_id}`
+          : (s.playback_url || "");
+
+        if (!embedSrc) {
+          return;
+        }
+
         const slide = document.createElement("div");
         slide.classList.add("carousel-slide");
         slide.innerHTML = `
           <div class="slide-player">
             <iframe
-              src="https://player.mux.com/${s.playback_id}"
+              src="${embedSrc}"
               title="${safeTitle}"
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
               allowfullscreen
