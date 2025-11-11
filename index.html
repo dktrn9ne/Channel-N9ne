@@ -442,19 +442,11 @@ button:hover { background: #00ffff; }
 <script>
 /* MUX ARCHIVES */
 async function loadArchives() {
-  const container = document.getElementById("archive-carousel");
-  if (container) {
-    container.innerHTML = '<p style="color:#7fd9ff">Loading previous streams…</p>';
-  }
-
-  const origin = typeof window !== "undefined" && window.location ? window.location.origin : "";
-  const candidates = [
-    "/api/get-mux-streams",
-    origin ? `${origin}/api/get-mux-streams` : "",
-    "https://channeln9ne.xyz/api/get-mux-streams",
-  ]
-    .filter(Boolean)
-    .filter((value, index, self) => self.indexOf(value) === index);
+  const defaultEndpoint = "https://fd80be9b-e6fa-45ad-b500-ed4d57b7fa4f/api/get-mux-streams";
+  const originEndpoint =
+    typeof window !== "undefined" && window.location && window.location.origin
+      ? `${window.location.origin}/api/get-mux-streams`
+      : defaultEndpoint;
 
   try {
     let streams = null;
@@ -495,70 +487,49 @@ async function loadArchives() {
       container.innerHTML = '<p style="color:#888">No past streams found.</p>';
       return;
     }
-
-    streams
-      .filter(item => item && (item.playback_id || item.playback_url))
-      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-      .slice(0, 12)
-      .forEach((s) => {
-        const safeTitle = s.title || "Previous Stream";
-        const created = new Date(s.created_at || 0);
-        const dateLabel = Number.isNaN(created.valueOf())
-          ? ""
-          : created.toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
-        const duration = s.duration || "Duration unavailable";
-        const viewCount = Number.isFinite(Number(s.views)) ? Number(s.views) : 0;
-        const embedSrc = s.playback_id
-          ? `https://player.mux.com/${s.playback_id}`
-          : (s.playback_url || "");
-
-        if (!embedSrc) {
-          return;
-        }
-
-        const slide = document.createElement("div");
-        slide.classList.add("carousel-slide");
-        slide.innerHTML = `
-          <div class="slide-player">
-            <iframe
-              src="${embedSrc}"
-              title="${safeTitle}"
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-              allowfullscreen
-              loading="lazy">
-            </iframe>
-          </div>
-          <div class="slide-info">
-            <h3 class="slide-title">${safeTitle}</h3>
-            <p class="slide-meta">
-              ${dateLabel ? `<span>${dateLabel}</span>` : ""}
-              <span>${duration}</span>
-              <span>👁️ ${viewCount.toLocaleString()}</span>
-            </p>
-          </div>`;
-        container.appendChild(slide);
-      });
-
-    if (!container.children.length) {
-      container.innerHTML = '<p style="color:#888">No playable streams available.</p>';
-    }
-  } catch (e) {
-    console.error("Failed to load archives", e);
-    if (container) {
-      container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
-    }
+    streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    streams.slice(0, 10).forEach((s) => {
+      if (!s.playback_id) return;
+      const safeTitle = s.title || "Previous Stream";
+      const created = new Date(s.created_at);
+      const dateLabel = isNaN(created)
+        ? ""
+        : created.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+      const duration = s.duration || "Duration unavailable";
+      const viewCount = Number.isFinite(Number(s.views)) ? Number(s.views) : 0;
+      const slide = document.createElement("div");
+      slide.classList.add("carousel-slide");
+      slide.innerHTML = `
+        <div class="slide-player">
+          <iframe
+            src="https://player.mux.com/${s.playback_id}"
+            title="${safeTitle}"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        <div class="slide-info">
+          <h3 class="slide-title">${safeTitle}</h3>
+          <p class="slide-meta">
+            ${dateLabel ? `<span>${dateLabel}</span>` : ""}
+            <span>${duration}</span>
+            <span>👁️ ${viewCount.toLocaleString()}</span>
+          </p>
+        </div>`;
+      container.appendChild(slide);
+    });
+  } catch(e){
+    console.error(e);
+    const container = document.getElementById("archive-carousel");
+    container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
   }
 }
-loadArchives().then(() => {
-  const container = document.getElementById("archive-carousel");
-  if (container) {
-    container.dispatchEvent(new Event("scroll"));
-  }
-});
+loadArchives();
 
 function setupCarouselControls(){
   const container=document.getElementById("archive-carousel");
