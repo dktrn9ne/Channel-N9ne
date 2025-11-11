@@ -1,716 +1,935 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Channel N9NE Live</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Channel N9NE Live</title>
 
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-  color: #fff;
-  font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
-}
-body { min-height: 100vh; position: relative; }
-
-/* ✨ Stars */
-.star-layer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-  transform-style: preserve-3d;
-  --offset-x: 0px;
-  --offset-y: 0px;
-  --pulse-translate: 0px;
-  --pulse-scale: 1;
-  transform: translate3d(calc(var(--offset-x)), calc(var(--offset-y) + var(--pulse-translate)), 0) scale(var(--pulse-scale));
-  animation: layerPulse 60s ease-in-out infinite;
-}
-.star {
-  position: absolute;
-  background: radial-gradient(circle at 35% 35%, #fff, rgba(255,255,255,0.4) 55%, transparent 70%);
-  border-radius: 50%;
-  opacity: 0.85;
-  filter: drop-shadow(0 0 4px rgba(0, 200, 255, 0.65));
-  mix-blend-mode: screen;
-  --scale-base: 1;
-  --scale-start: 0.9;
-  --scale-mid: 1.05;
-  --drift-x: 0px;
-  --drift-y: 0px;
-  --drift-z: 0px;
-  --twinkle-duration: 6s;
-  --twinkle-delay: 0s;
-  --drift-duration: 120s;
-  --drift-delay: 0s;
-  animation: twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite,
-             drift var(--drift-duration) linear var(--drift-delay) infinite;
-}
-
-/* Layout */
-#content {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 5vh 0 100px 0;
-  min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-}
-#content img {
-  width: 80%;
-  max-width: 600px;
-  height: auto;
-  margin-bottom: 30px;
-}
-
-/* STREAM + CHAT */
-.stream-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 20px;
-  width: 95%;
-  max-width: 1200px;
-  box-sizing: border-box;
-}
-.stream-column {
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  width: 100%;
-  box-sizing: border-box;
-}
-.mux-player-container {
-  width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: 10px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
-}
-mux-player { width: 100%; height: 100%; }
-
-/* BUTTONS */
-.button-row {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: wrap;
-  gap: clamp(14px, 2.4vw, 28px);
-  width: 100%;
-  margin-top: 16px;
-  padding: 0 clamp(6px, 2vw, 18px);
-  box-sizing: border-box;
-}
-.n9ne-btn {
-  flex: 0 1 clamp(80px, 18vw, 160px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 600px;
-  cursor: pointer;
-}
-.n9ne-btn img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  transform: rotateX(12deg);
-  transition: all 0.25s ease;
-  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
-  opacity: 0.95;
-}
-.n9ne-btn img:hover {
-  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
-  filter: drop-shadow(0 0 8px rgba(0,255,255,1));
-  opacity: 1;
-}
-@keyframes pulseGlow {
-  0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));}
-  50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
-}
-.n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
-
-/* CHAT */
-#chat {
-  flex: 1.2;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #333;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.3);
-  padding: 10px;
-  max-height: 80vh;
-  width: 100%;
-  box-sizing: border-box;
-}
-#chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: bold;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
-  margin-bottom: 5px;
-  color: #00bfff;
-}
-#chat-box {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  border-bottom: 1px solid #333;
-}
-.chat-status {
-  font-size: 0.85em;
-  color: #99cce6;
-  margin-bottom: 6px;
-  min-height: 1.2em;
-}
-.chat-status.success {
-  color: #68ffda;
-}
-.chat-status.error {
-  color: #ff8a8a;
-}
-.msg {
-  margin-bottom: 6px;
-  line-height: 1.4;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: baseline;
-}
-.msg .message-text { color: #fff; }
-.user { color: #00ffff; font-weight: bold; }
-.time { color: #777; font-size: 0.8em; margin-left: 5px; }
-.chat-empty {
-  color: #9db3bf;
-  font-style: italic;
-  text-align: center;
-  margin: 16px 0;
-}
-#chat-inputs {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-input, button {
-  border: none;
-  border-radius: 5px;
-  padding: 8px;
-}
-input {
-  flex: 1;
-  background: #111;
-  color: #fff;
-}
-button {
-  background: #00bfff;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-button:hover { background: #00ffff; }
-
-/* 🎥 Previous Streams */
-#archive-section {
-  margin-top: 50px;
-  width: 95%;
-  max-width: 1200px;
-  text-align: center;
-  color: #00bfff;
-}
-#archive-carousel {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  padding: 10px 30px 20px 30px;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 30px;
-  justify-content: flex-start;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-}
-#archive-carousel::-webkit-scrollbar { display: none; }
-.archive-card {
-  position: relative;
-  flex: 0 0 auto;
-  width: 260px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 0 6px rgba(0,255,255,0.3);
-  scroll-snap-align: center;
-  text-align: left;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  overflow: hidden;
-}
-.archive-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(0,255,255,0.5);
-}
-.archive-card img {
-  width: 100%;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.archive-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-}
-.duration-tag {
-  font-size: 0.85em;
-  color: #00bfff;
-}
-.watch-overlay {
-  position: absolute;
-  inset: 10px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #00ffff;
-  font-weight: bold;
-  font-size: 1.1em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
-  text-shadow: 0 0 8px #00ffff;
-}
-.archive-card:hover .watch-overlay {
-  opacity: 1;
-}
-
-/* 📱 MOBILE OPTIMIZATION */
-@media (max-width: 900px) {
-  #content { padding: 2vh 0 80px 0; }
-  .stream-wrapper {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-  .stream-column {
-    align-items: center;
-    width: 100%;
-  }
-  .button-row {
-    justify-content: center;
-    padding-right: 0;
-    margin-top: 10px;
-  }
-  #chat {
-    width: 95%;
-    max-height: 400px;
-  }
-}
-</style>
-
-<script src="https://unpkg.com/@mux/mux-player"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-
-<body>
-<!-- 🌠 Stars -->
-<div class="star-layer" id="layer1"></div>
-<div class="star-layer" id="layer2"></div>
-<div class="star-layer" id="layer3"></div>
-
-<div id="content">
-  <img src="channel9.png" alt="Channel N9NE Logo"/>
-
-  <div class="stream-wrapper">
-    <div class="stream-column">
-      <div class="mux-player-container">
-        <mux-player
-          stream-type="live"
-          playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-          primary-color="#00bfff"
-          metadata-video-title="Live Stream"
-          autoplay muted>
-        </mux-player>
-      </div>
-
-      <div class="button-row">
-        <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
-          <img src="venmo.png" alt="Venmo" class="live" />
-        </a>
-        <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
-          <img src="sub.png" alt="Subscribe" class="live" />
-        </a>
-      </div>
-    </div>
-
-    <!-- 💬 Chat -->
-    <div id="chat">
-      <div id="chat-header">
-        <span>💬 Chat is Live</span>
-        <span id="viewer-count">0 watching</span>
-      </div>
-      <div id="chat-status" class="chat-status" role="status" aria-live="polite">Connecting…</div>
-      <div id="chat-box"></div>
-      <div id="chat-inputs">
-        <input id="username" placeholder="Name"/>
-        <input id="msg" placeholder="Say something..."/>
-        <button id="send">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <hr style="width:80%; border: 1px solid rgba(0,255,255,0.2); margin: 40px auto;">
-  <div id="archive-section">
-    <h2>Previous Streams</h2>
-    <div id="archive-carousel"></div>
-  </div>
-</div>
-
-<!-- 🎥 Archives + Chat + Stars -->
-<script>
-/* MUX ARCHIVES */
-async function loadArchives() {
-  const defaultEndpoint = "https://channeln9ne.xyz/api/get-mux-streams";
-  const originEndpoint =
-    typeof window !== "undefined" && window.location && window.location.origin
-      ? `${window.location.origin}/api/get-mux-streams`
-      : defaultEndpoint;
-
-  try {
-    let res = await fetch(originEndpoint);
-
-    // Some hosts may block cross-origin requests; fall back to the public endpoint.
-    if (!res.ok) {
-      console.warn(`Archive fetch failed (${res.status}). Falling back to default endpoint.`);
-      res = await fetch(defaultEndpoint);
-    }
-
-    if (!res.ok) throw new Error(`Failed to load streams (status ${res.status})`);
-    const streams = await res.json();
-    const container = document.getElementById("archive-carousel");
-    container.innerHTML = "";
-    if (!Array.isArray(streams) || streams.length === 0) {
-      container.innerHTML = '<p style="color:#888">No past streams found.</p>';
-      return;
-    }
-    streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    streams.forEach((s) => {
-      const safeTitle = s.title || "Previous Stream";
-      const created = new Date(s.created_at);
-      const dateLabel = isNaN(created) ? "" : created.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
-      const card = document.createElement("div");
-      card.classList.add("archive-card");
-      card.innerHTML = `
-        <img src="${s.thumbnail_url}" alt="${safeTitle}" />
-        <div class="watch-overlay">▶️ Watch Replay</div>
-        <div class="archive-meta"><span>${safeTitle}${dateLabel ? " — " + dateLabel : ""}</span></div>
-        <div class="archive-meta"><span class="duration-tag">${s.duration || "—"}</span><span>👁️ ${s.views || 0}</span></div>`;
-      card.addEventListener("click",()=>openPlayback(s.playback_id,safeTitle));
-      container.appendChild(card);
-    });
-  } catch(e){
-    console.error(e);
-    const container = document.getElementById("archive-carousel");
-    container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
-  }
-}
-function openPlayback(id,title){
-  const modal=document.getElementById("playback-modal");
-  const player=document.getElementById("archive-player");
-  player.setAttribute("playback-id",id);
-  player.setAttribute("metadata-video-title",title);
-  modal.style.display="flex";
-  document.body.style.overflow="hidden";
-}
-document.getElementById("close-modal").addEventListener("click",()=>{
-  const modal=document.getElementById("playback-modal");
-  const player=document.getElementById("archive-player");
-  player.pause(); modal.style.display="none"; document.body.style.overflow="auto";
-});
-loadArchives();
-
-/* SUPABASE CHAT */
-const SUPABASE_URL="https://kidmxnxkhyhaehzexatm.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U";
-const supabaseFactory=window.supabase?.createClient;
-const supabase=typeof supabaseFactory==="function"
-  ? supabaseFactory(SUPABASE_URL,SUPABASE_ANON_KEY)
-  : null;
-const chatBox=document.getElementById("chat-box");
-const usernameInput=document.getElementById("username");
-const msgInput=document.getElementById("msg");
-const sendBtn=document.getElementById("send");
-const chatStatus=document.getElementById("chat-status");
-const viewerCount=document.getElementById("viewer-count");
-
-let isConnected=false;
-let isSending=false;
-
-function updateViewerLabel(label){
-  if(viewerCount) viewerCount.textContent=label;
-}
-
-function setChatStatus(message,tone="info"){
-  if(!chatStatus)return;
-  chatStatus.textContent=message;
-  chatStatus.classList.remove("success","error");
-  if(tone==="success") chatStatus.classList.add("success");
-  else if(tone==="error") chatStatus.classList.add("error");
-}
-
-function showEmptyState(){
-  if(!chatBox)return;
-  chatBox.innerHTML='<p class="chat-empty">Be the first to say hello ✨</p>';
-  chatBox.dataset.empty="true";
-}
-
-function clearEmptyState(){
-  if(chatBox?.dataset.empty){
-    chatBox.innerHTML="";
-    delete chatBox.dataset.empty;
-  }
-}
-
-function addMessage(message){
-  if(!message||!chatBox)return;
-  clearEmptyState();
-  const div=document.createElement("div");
-  div.classList.add("msg");
-
-  const nameSpan=document.createElement("span");
-  nameSpan.classList.add("user");
-  nameSpan.textContent=message.username?.trim()||"Guest";
-
-  const textSpan=document.createElement("span");
-  textSpan.classList.add("message-text");
-  textSpan.textContent=message.text||"";
-
-  const timeSpan=document.createElement("span");
-  timeSpan.classList.add("time");
-  const created=message.created_at?new Date(message.created_at):new Date();
-  if(!Number.isNaN(created.getTime())){
-    timeSpan.textContent=created.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-  }
-
-  div.appendChild(nameSpan);
-  div.appendChild(document.createTextNode(": "));
-  div.appendChild(textSpan);
-  div.appendChild(timeSpan);
-  chatBox.appendChild(div);
-  chatBox.scrollTop=chatBox.scrollHeight;
-}
-
-function updateSendState(){
-  if(!sendBtn||!msgInput)return;
-  const hasText=msgInput.value.trim().length>0;
-  sendBtn.disabled=!isConnected||!hasText||isSending;
-}
-
-async function loadMessages(){
-  if(!chatBox)return;
-  if(!supabase){
-    showEmptyState();
-    return;
-  }
-  try{
-    const {data,error}=await supabase.from("messages").select("*").order("created_at",{ascending:true}).limit(100);
-    if(error) throw error;
-    if(!data||data.length===0){
-      showEmptyState();
-    }else{
-      chatBox.innerHTML="";
-      data.forEach(addMessage);
-    }
-    if(!isConnected){
-      setChatStatus("Chat history loaded. Connecting…");
-      updateViewerLabel("Connecting…");
-    }
-  }catch(err){
-    console.error("Failed to load chat history",err);
-    setChatStatus("Unable to load chat history. Retrying…","error");
-    updateViewerLabel("Chat offline");
-    showEmptyState();
-    setTimeout(loadMessages,5000);
-  }
-}
-
-async function sendMessage(){
-  if(!sendBtn||!msgInput||!usernameInput)return;
-  const text=msgInput.value.trim();
-  if(!text||!isConnected||isSending||!supabase)return;
-  const safeName=usernameInput.value.trim().slice(0,24)||"Guest";
-  isSending=true;
-  updateSendState();
-  const previousLabel=sendBtn.textContent;
-  sendBtn.textContent="Sending…";
-  try{
-    const {error}=await supabase.from("messages").insert([{username:safeName,text}]);
-    if(error) throw error;
-    msgInput.value="";
-    updateSendState();
-  }catch(err){
-    console.error("Failed to send message",err);
-    setChatStatus("Message failed to send. Please try again.","error");
-  }finally{
-    isSending=false;
-    sendBtn.textContent=previousLabel;
-    updateSendState();
-  }
-}
-
-if(msgInput){
-  msgInput.addEventListener("input",updateSendState);
-  msgInput.addEventListener("keydown",(event)=>{
-    if(event.key==="Enter"&&!event.shiftKey){
-      event.preventDefault();
-      sendMessage();
-    }
-  });
-}
-if(sendBtn){
-  sendBtn.addEventListener("click",sendMessage);
-}
-
-showEmptyState();
-updateSendState();
-
-if(supabase){
-  setChatStatus("Connecting…");
-  updateViewerLabel("Connecting…");
-  loadMessages();
-
-  const messageChannel=supabase
-    .channel("public:messages")
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
-      addMessage(payload.new);
-    });
-
-  messageChannel
-    .subscribe((status)=>{
-      if(status==="SUBSCRIBED"){
-        isConnected=true;
-        setChatStatus("Connected. Say hello!","success");
-        updateViewerLabel("Chat online");
-        loadMessages();
-      }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
-        isConnected=false;
-        setChatStatus("Connection lost. Reconnecting…","error");
-        updateViewerLabel("Chat offline");
-      }else if(status==="CLOSED"){
-        isConnected=false;
-        setChatStatus("Chat connection closed.","error");
-        updateViewerLabel("Chat offline");
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, Helvetica, sans-serif;
       }
-      updateSendState();
-    })
-    .catch((err)=>{
-      console.error("Failed to subscribe to chat updates",err);
-      isConnected=false;
-      setChatStatus("Chat unavailable. Please refresh.","error");
-      updateViewerLabel("Chat offline");
-      updateSendState();
-    });
-}else{
-  console.warn("Supabase client unavailable; running in offline chat mode.");
-  setChatStatus("Chat offline. Please refresh to try again.","error");
-  updateViewerLabel("Chat offline");
-}
 
-/* STARS */
-function createStars(layerId,count,sizeRange,travelRange,driftDurationRange,twinkleRange){
-  const layer=document.getElementById(layerId);
-  if(!layer) return;
-  layer.style.animationDuration=`${60+Math.random()*30}s`;
-  layer.style.animationDelay=`-${Math.random()*30}s`;
-  for(let i=0;i<count;i++){
-    const s=document.createElement("div");
-    s.classList.add("star");
-    const size=Math.random()*(sizeRange[1]-sizeRange[0])+sizeRange[0];
-    s.style.width=`${size}px`;
-    s.style.height=`${size}px`;
-    s.style.top=`${Math.random()*100}%`;
-    s.style.left=`${Math.random()*100}%`;
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        color: #fff;
+        overflow-x: hidden;
+      }
 
-    const scale=(0.7+Math.random()*0.6).toFixed(2);
-    const scaleStart=(scale*0.85).toFixed(2);
-    const scaleMid=(scale*1.05).toFixed(2);
-    const angle=Math.random()*Math.PI*2;
-    const travel=Math.random()*(travelRange[1]-travelRange[0])+travelRange[0];
-    const depth=(Math.random()-0.5)*travel*0.3;
-    const driftDuration=(Math.random()*(driftDurationRange[1]-driftDurationRange[0])+driftDurationRange[0]).toFixed(2);
-    const twinkleDuration=(Math.random()*(twinkleRange[1]-twinkleRange[0])+twinkleRange[0]).toFixed(2);
+      body {
+        min-height: 100vh;
+        position: relative;
+      }
 
-    s.style.setProperty("--scale-base",scale);
-    s.style.setProperty("--scale-start",scaleStart);
-    s.style.setProperty("--scale-mid",scaleMid);
-    s.style.setProperty("--drift-x",`${Math.cos(angle)*travel}px`);
-    s.style.setProperty("--drift-y",`${Math.sin(angle)*travel}px`);
-    s.style.setProperty("--drift-z",`${depth}px`);
-    s.style.setProperty("--drift-duration",`${driftDuration}s`);
-    s.style.setProperty("--drift-delay",`-${(Math.random()*driftDurationRange[1]).toFixed(2)}s`);
-    s.style.setProperty("--twinkle-duration",`${twinkleDuration}s`);
-    s.style.setProperty("--twinkle-delay",`-${(Math.random()*6).toFixed(2)}s`);
+      /* ✨ Galaxy background */
+      .star-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transform-style: preserve-3d;
+        --offset-x: 0px;
+        --offset-y: 0px;
+        --pulse-translate: 0px;
+        --pulse-scale: 1;
+        transform: translate3d(var(--offset-x), calc(var(--offset-y) + var(--pulse-translate)), 0)
+          scale(var(--pulse-scale));
+        animation: layerPulse 60s ease-in-out infinite;
+      }
 
-    layer.appendChild(s);
-  }
-}
-const starStyle=document.createElement("style");
-starStyle.innerHTML=`
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(0, 140, 255, 0.45)); }
-  45% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.95)); }
-  55% { opacity: 0.85; filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.7)); }
-}
-@keyframes drift {
-  0% { transform: translate3d(0, 0, 0) scale(var(--scale-start)); }
-  50% { transform: translate3d(calc(var(--drift-x) * 0.5), calc(var(--drift-y) * 0.5), calc(var(--drift-z) * 0.5)) scale(var(--scale-mid)); }
-  100% { transform: translate3d(var(--drift-x), var(--drift-y), var(--drift-z)) scale(var(--scale-base)); }
-}
-@keyframes layerPulse {
-  0%, 100% { --pulse-translate: 0px; --pulse-scale: 1; }
-  50% { --pulse-translate: -12px; --pulse-scale: 1.03; }
-}
-`;
-document.head.appendChild(starStyle);
-createStars("layer1",140,[1,2],[80,160],[90,140],[4,7]);
-createStars("layer2",95,[2,3],[140,240],[120,180],[5,8]);
-createStars("layer3",65,[3,4],[200,320],[160,220],[6,9]);
-document.addEventListener("mousemove",(e)=>{
-  const x=e.clientX/window.innerWidth-0.5;
-  const y=e.clientY/window.innerHeight-0.5;
-  const layer1=document.getElementById("layer1");
-  const layer2=document.getElementById("layer2");
-  const layer3=document.getElementById("layer3");
-  layer1?.style.setProperty("--offset-x",`${x*10}px`);
-  layer1?.style.setProperty("--offset-y",`${y*10}px`);
-  layer2?.style.setProperty("--offset-x",`${x*20}px`);
-  layer2?.style.setProperty("--offset-y",`${y*20}px`);
-  layer3?.style.setProperty("--offset-x",`${x*40}px`);
-  layer3?.style.setProperty("--offset-y",`${y*40}px`);
-});
-</script>
+      .star {
+        position: absolute;
+        background: radial-gradient(circle at 35% 35%, #fff, rgba(255, 255, 255, 0.4) 55%, transparent 70%);
+        border-radius: 50%;
+        opacity: 0.85;
+        filter: drop-shadow(0 0 4px rgba(0, 200, 255, 0.65));
+        mix-blend-mode: screen;
+        --scale-base: 1;
+        --scale-start: 0.9;
+        --scale-mid: 1.05;
+        --drift-x: 0px;
+        --drift-y: 0px;
+        --drift-z: 0px;
+        --twinkle-duration: 6s;
+        --twinkle-delay: 0s;
+        --drift-duration: 120s;
+        --drift-delay: 0s;
+        animation:
+          twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite,
+          drift var(--drift-duration) linear var(--drift-delay) infinite;
+      }
 
-<!-- 🎬 Playback Modal -->
-<div id="playback-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;justify-content:center;align-items:center;flex-direction:column;padding:20px;">
-  <button id="close-modal" style="align-self:flex-end;background:none;border:none;color:#00ffff;font-size:1.5em;cursor:pointer;margin-bottom:10px;">✖</button>
-  <div class="mux-player-container" style="width:90%;max-width:900px;">
-    <mux-player id="archive-player" stream-type="on-demand" primary-color="#00bfff" metadata-video-title="Previous Stream" playsinline controls></mux-player>
-  </div>
-</div>
-</body>
+      /* Layout */
+      #content {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5vh 0 100px;
+        min-height: 100vh;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      #content img {
+        width: 80%;
+        max-width: 600px;
+        height: auto;
+        margin-bottom: 30px;
+      }
+
+      .stream-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 20px;
+        width: 95%;
+        max-width: 1200px;
+        box-sizing: border-box;
+      }
+
+      .stream-column {
+        flex: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .mux-player-container {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.3);
+      }
+
+      mux-player {
+        width: 100%;
+        height: 100%;
+      }
+
+      .button-row {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: clamp(14px, 2.4vw, 28px);
+        width: 100%;
+        margin-top: 16px;
+        padding: 0 clamp(6px, 2vw, 18px);
+        box-sizing: border-box;
+      }
+
+      .n9ne-btn {
+        flex: 0 1 clamp(80px, 18vw, 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 600px;
+        cursor: pointer;
+      }
+
+      .n9ne-btn img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        transform: rotateX(12deg);
+        transition: all 0.25s ease;
+        filter: drop-shadow(0 0 2px rgba(0, 191, 255, 0.8));
+        opacity: 0.95;
+      }
+
+      .n9ne-btn img:hover {
+        transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
+        filter: drop-shadow(0 0 8px rgba(0, 255, 255, 1));
+        opacity: 1;
+      }
+
+      @keyframes pulseGlow {
+        0%,
+        100% {
+          filter: drop-shadow(0 0 2px rgba(0, 255, 255, 0.6));
+        }
+
+        50% {
+          filter: drop-shadow(0 0 8px rgba(0, 255, 255, 1));
+        }
+      }
+
+      .n9ne-btn img.live {
+        animation: pulseGlow 2.5s infinite;
+      }
+
+      /* Chat */
+      #chat {
+        flex: 1.2;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #333;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
+        max-height: 80vh;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      #chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        margin-bottom: 5px;
+        color: #00bfff;
+      }
+
+      #chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        border-bottom: 1px solid #333;
+      }
+
+      .chat-status {
+        font-size: 0.85em;
+        color: #99cce6;
+        margin-bottom: 6px;
+        min-height: 1.2em;
+      }
+
+      .chat-status.success {
+        color: #68ffda;
+      }
+
+      .chat-status.error {
+        color: #ff8a8a;
+      }
+
+      .msg {
+        margin-bottom: 6px;
+        line-height: 1.4;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: baseline;
+      }
+
+      .msg .message-text {
+        color: #fff;
+      }
+
+      .user {
+        color: #00ffff;
+        font-weight: bold;
+      }
+
+      .time {
+        color: #777;
+        font-size: 0.8em;
+        margin-left: 5px;
+      }
+
+      .chat-empty {
+        color: #9db3bf;
+        font-style: italic;
+        text-align: center;
+        margin: 16px 0;
+      }
+
+      #chat-inputs {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      input,
+      button {
+        border: none;
+        border-radius: 5px;
+        padding: 8px;
+      }
+
+      input {
+        flex: 1;
+        background: #111;
+        color: #fff;
+      }
+
+      button {
+        background: #00bfff;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #00ffff;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Archive carousel */
+      #archive-section {
+        margin-top: 50px;
+        width: 95%;
+        max-width: 1200px;
+        text-align: center;
+        color: #00bfff;
+      }
+
+      #archive-carousel {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        padding: 10px 30px 20px;
+        scroll-snap-type: x mandatory;
+        scroll-padding: 30px;
+        justify-content: flex-start;
+        box-sizing: border-box;
+        scroll-behavior: smooth;
+      }
+
+      #archive-carousel::-webkit-scrollbar {
+        display: none;
+      }
+
+      .archive-card {
+        position: relative;
+        flex: 0 0 auto;
+        width: 260px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+        scroll-snap-align: center;
+        text-align: left;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        overflow: hidden;
+      }
+
+      .archive-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+      }
+
+      .archive-card img {
+        width: 100%;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .archive-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      .duration-tag {
+        font-size: 0.85em;
+        color: #00bfff;
+      }
+
+      .watch-overlay {
+        position: absolute;
+        inset: 10px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #00ffff;
+        font-weight: bold;
+        font-size: 1.1em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 8px;
+        text-shadow: 0 0 8px #00ffff;
+      }
+
+      .archive-card:hover .watch-overlay {
+        opacity: 1;
+      }
+
+      /* Responsive tweaks */
+      @media (max-width: 900px) {
+        #content {
+          padding: 2vh 0 80px;
+        }
+
+        .stream-wrapper {
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+        }
+
+        .stream-column {
+          align-items: center;
+          width: 100%;
+        }
+
+        .button-row {
+          justify-content: center;
+          padding-right: 0;
+          margin-top: 10px;
+        }
+
+        #chat {
+          width: 95%;
+          max-height: 400px;
+        }
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.3;
+          filter: drop-shadow(0 0 2px rgba(0, 140, 255, 0.45));
+        }
+
+        45% {
+          opacity: 1;
+          filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.95));
+        }
+
+        55% {
+          opacity: 0.85;
+          filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.7));
+        }
+      }
+
+      @keyframes drift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(var(--scale-start));
+        }
+
+        50% {
+          transform: translate3d(
+              calc(var(--drift-x) * 0.5),
+              calc(var(--drift-y) * 0.5),
+              calc(var(--drift-z) * 0.5)
+            )
+            scale(var(--scale-mid));
+        }
+
+        100% {
+          transform: translate3d(var(--drift-x), var(--drift-y), var(--drift-z)) scale(var(--scale-base));
+        }
+      }
+
+      @keyframes layerPulse {
+        0%,
+        100% {
+          --pulse-translate: 0px;
+          --pulse-scale: 1;
+        }
+
+        50% {
+          --pulse-translate: -12px;
+          --pulse-scale: 1.03;
+        }
+      }
+    </style>
+
+    <script src="https://unpkg.com/@mux/mux-player"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+
+  <body>
+    <!-- Galaxy layers -->
+    <div class="star-layer" id="layer1"></div>
+    <div class="star-layer" id="layer2"></div>
+    <div class="star-layer" id="layer3"></div>
+
+    <div id="content">
+      <img src="channel9.png" alt="Channel N9NE Logo" />
+
+      <div class="stream-wrapper">
+        <div class="stream-column">
+          <div class="mux-player-container">
+            <mux-player
+              stream-type="live"
+              playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
+              primary-color="#00bfff"
+              metadata-video-title="Live Stream"
+              autoplay
+              muted
+            ></mux-player>
+          </div>
+
+          <div class="button-row">
+            <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
+              <img src="venmo.png" alt="Venmo" class="live" />
+            </a>
+            <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
+              <img src="sub.png" alt="Subscribe" class="live" />
+            </a>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <section id="chat" aria-label="Live chat">
+          <header id="chat-header">
+            <span>💬 Chat is Live</span>
+            <span id="viewer-count">0 watching</span>
+          </header>
+          <div id="chat-status" class="chat-status" role="status" aria-live="polite">Connecting…</div>
+          <div id="chat-box"></div>
+          <div id="chat-inputs">
+            <input id="username" placeholder="Name" autocomplete="name" />
+            <input id="msg" placeholder="Say something..." />
+            <button id="send">Send</button>
+          </div>
+        </section>
+      </div>
+
+      <hr style="width: 80%; border: 1px solid rgba(0, 255, 255, 0.2); margin: 40px auto" />
+
+      <section id="archive-section" aria-labelledby="archive-title">
+        <h2 id="archive-title">Previous Streams</h2>
+        <div id="archive-carousel"></div>
+      </section>
+    </div>
+
+    <div
+      id="playback-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="archive-title"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 20px;
+      "
+    >
+      <button
+        id="close-modal"
+        type="button"
+        style="
+          align-self: flex-end;
+          background: none;
+          border: none;
+          color: #00ffff;
+          font-size: 1.5em;
+          cursor: pointer;
+          margin-bottom: 10px;
+        "
+        aria-label="Close replay"
+      >
+        ✖
+      </button>
+      <div class="mux-player-container" style="width: 90%; max-width: 900px">
+        <mux-player
+          id="archive-player"
+          stream-type="on-demand"
+          primary-color="#00bfff"
+          metadata-video-title="Previous Stream"
+          playsinline
+          controls
+        ></mux-player>
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        /* -------------------- Archives -------------------- */
+        const archiveCarousel = document.getElementById("archive-carousel");
+        const archiveModal = document.getElementById("playback-modal");
+        const archivePlayer = document.getElementById("archive-player");
+        const closeModalButton = document.getElementById("close-modal");
+
+        async function loadArchives() {
+          if (!archiveCarousel) return;
+
+          const defaultEndpoint = "https://channeln9ne.xyz/api/get-mux-streams";
+          const originEndpoint =
+            typeof window !== "undefined" && window.location && window.location.origin
+              ? `${window.location.origin}/api/get-mux-streams`
+              : defaultEndpoint;
+
+          try {
+            let response = await fetch(originEndpoint);
+            if (!response.ok) {
+              console.warn(
+                `Archive fetch failed (${response.status}). Falling back to default endpoint.`
+              );
+              response = await fetch(defaultEndpoint);
+            }
+
+            if (!response.ok) {
+              throw new Error(`Failed to load streams (status ${response.status})`);
+            }
+
+            const streams = await response.json();
+            archiveCarousel.innerHTML = "";
+
+            if (!Array.isArray(streams) || streams.length === 0) {
+              archiveCarousel.innerHTML = '<p style="color:#888">No past streams found.</p>';
+              return;
+            }
+
+            streams
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+              .forEach((stream) => {
+                const safeTitle = stream.title || "Previous Stream";
+                const createdAt = new Date(stream.created_at);
+                const dateLabel = isNaN(createdAt)
+                  ? ""
+                  : createdAt.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    });
+
+                const card = document.createElement("div");
+                card.className = "archive-card";
+                card.innerHTML = `
+                  <img src="${stream.thumbnail_url}" alt="${safeTitle}" />
+                  <div class="watch-overlay">▶️ Watch Replay</div>
+                  <div class="archive-meta"><span>${safeTitle}${
+                    dateLabel ? ` — ${dateLabel}` : ""
+                  }</span></div>
+                  <div class="archive-meta"><span class="duration-tag">${
+                    stream.duration || "—"
+                  }</span><span>👁️ ${stream.views || 0}</span></div>
+                `;
+
+                card.addEventListener("click", () => openPlayback(stream.playback_id, safeTitle));
+                archiveCarousel.appendChild(card);
+              });
+          } catch (error) {
+            console.error(error);
+            archiveCarousel.innerHTML =
+              '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
+          }
+        }
+
+        function openPlayback(playbackId, title) {
+          if (!archiveModal || !archivePlayer) return;
+          archivePlayer.setAttribute("playback-id", playbackId);
+          archivePlayer.setAttribute("metadata-video-title", title);
+          archiveModal.style.display = "flex";
+          document.body.style.overflow = "hidden";
+        }
+
+        function closePlayback() {
+          if (!archiveModal || !archivePlayer) return;
+          archiveModal.style.display = "none";
+          document.body.style.overflow = "auto";
+          archivePlayer.pause?.();
+        }
+
+        closeModalButton?.addEventListener("click", closePlayback);
+        archiveModal?.addEventListener("click", (event) => {
+          if (event.target === archiveModal) {
+            closePlayback();
+          }
+        });
+
+        loadArchives();
+
+        /* -------------------- Chat -------------------- */
+        const SUPABASE_URL = "https://kidmxnxkhyhaehzexatm.supabase.co";
+        const SUPABASE_ANON_KEY =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U";
+
+        const supabaseClient =
+          typeof window.supabase?.createClient === "function"
+            ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : null;
+
+        const chatBox = document.getElementById("chat-box");
+        const usernameInput = document.getElementById("username");
+        const messageInput = document.getElementById("msg");
+        const sendButton = document.getElementById("send");
+        const chatStatus = document.getElementById("chat-status");
+        const viewerCount = document.getElementById("viewer-count");
+
+        let isConnected = false;
+        let isSending = false;
+
+        function updateViewerLabel(label) {
+          if (viewerCount) {
+            viewerCount.textContent = label;
+          }
+        }
+
+        function setChatStatus(message, tone = "info") {
+          if (!chatStatus) return;
+          chatStatus.textContent = message;
+          chatStatus.classList.remove("success", "error");
+          if (tone === "success") {
+            chatStatus.classList.add("success");
+          } else if (tone === "error") {
+            chatStatus.classList.add("error");
+          }
+        }
+
+        function showEmptyState() {
+          if (!chatBox) return;
+          chatBox.innerHTML = '<p class="chat-empty">Be the first to say hello ✨</p>';
+          chatBox.dataset.empty = "true";
+        }
+
+        function clearEmptyState() {
+          if (chatBox?.dataset.empty) {
+            chatBox.innerHTML = "";
+            delete chatBox.dataset.empty;
+          }
+        }
+
+        function addMessage(message) {
+          if (!message || !chatBox) return;
+          clearEmptyState();
+
+          const container = document.createElement("div");
+          container.className = "msg";
+
+          const userSpan = document.createElement("span");
+          userSpan.className = "user";
+          userSpan.textContent = message.username?.trim() || "Guest";
+
+          const textSpan = document.createElement("span");
+          textSpan.className = "message-text";
+          textSpan.textContent = message.text || "";
+
+          const timeSpan = document.createElement("span");
+          timeSpan.className = "time";
+          const createdAt = message.created_at ? new Date(message.created_at) : new Date();
+          if (!Number.isNaN(createdAt.getTime())) {
+            timeSpan.textContent = createdAt.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
+
+          container.appendChild(userSpan);
+          container.appendChild(document.createTextNode(": "));
+          container.appendChild(textSpan);
+          container.appendChild(timeSpan);
+
+          chatBox.appendChild(container);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function updateSendState() {
+          if (!sendButton || !messageInput) return;
+          const hasText = messageInput.value.trim().length > 0;
+          sendButton.disabled = !isConnected || !hasText || isSending;
+        }
+
+        async function loadMessages() {
+          if (!chatBox) return;
+          if (!supabaseClient) {
+            showEmptyState();
+            return;
+          }
+
+          try {
+            const { data, error } = await supabaseClient
+              .from("messages")
+              .select("*")
+              .order("created_at", { ascending: true })
+              .limit(100);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+              showEmptyState();
+            } else {
+              chatBox.innerHTML = "";
+              data.forEach(addMessage);
+            }
+
+            if (!isConnected) {
+              setChatStatus("Chat history loaded. Connecting…");
+              updateViewerLabel("Connecting…");
+            }
+          } catch (error) {
+            console.error("Failed to load chat history", error);
+            setChatStatus("Unable to load chat history. Retrying…", "error");
+            updateViewerLabel("Chat offline");
+            showEmptyState();
+            setTimeout(loadMessages, 5000);
+          }
+        }
+
+        async function sendMessage() {
+          if (!sendButton || !messageInput || !usernameInput) return;
+          const text = messageInput.value.trim();
+          if (!text || !isConnected || isSending || !supabaseClient) return;
+
+          const safeName = usernameInput.value.trim().slice(0, 24) || "Guest";
+          isSending = true;
+          updateSendState();
+
+          const previousLabel = sendButton.textContent;
+          sendButton.textContent = "Sending…";
+
+          try {
+            const { error } = await supabaseClient
+              .from("messages")
+              .insert([{ username: safeName, text }]);
+            if (error) throw error;
+            messageInput.value = "";
+            updateSendState();
+          } catch (error) {
+            console.error("Failed to send message", error);
+            setChatStatus("Message failed to send. Please try again.", "error");
+          } finally {
+            isSending = false;
+            sendButton.textContent = previousLabel;
+            updateSendState();
+          }
+        }
+
+        messageInput?.addEventListener("input", updateSendState);
+        messageInput?.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+          }
+        });
+        sendButton?.addEventListener("click", sendMessage);
+
+        showEmptyState();
+        updateSendState();
+
+        if (supabaseClient) {
+          setChatStatus("Connecting…");
+          updateViewerLabel("Connecting…");
+          loadMessages();
+
+          const messageChannel = supabaseClient
+            .channel("public:messages")
+            .on(
+              "postgres_changes",
+              { event: "INSERT", schema: "public", table: "messages" },
+              (payload) => {
+                addMessage(payload.new);
+              }
+            );
+
+          messageChannel
+            .subscribe((status) => {
+              if (status === "SUBSCRIBED") {
+                isConnected = true;
+                setChatStatus("Connected. Say hello!", "success");
+                updateViewerLabel("Chat online");
+                loadMessages();
+              } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+                isConnected = false;
+                setChatStatus("Connection lost. Reconnecting…", "error");
+                updateViewerLabel("Chat offline");
+              } else if (status === "CLOSED") {
+                isConnected = false;
+                setChatStatus("Chat connection closed.", "error");
+                updateViewerLabel("Chat offline");
+              }
+              updateSendState();
+            })
+            .catch((error) => {
+              console.error("Failed to subscribe to chat updates", error);
+              isConnected = false;
+              setChatStatus("Chat unavailable. Please refresh.", "error");
+              updateViewerLabel("Chat offline");
+              updateSendState();
+            });
+        } else {
+          console.warn("Supabase client unavailable; running in offline chat mode.");
+          setChatStatus("Chat offline. Please refresh to try again.", "error");
+          updateViewerLabel("Chat offline");
+        }
+
+        /* -------------------- Starfield -------------------- */
+        function createStars(
+          layerId,
+          count,
+          sizeRange,
+          travelRange,
+          driftDurationRange,
+          twinkleRange
+        ) {
+          const layer = document.getElementById(layerId);
+          if (!layer) return;
+
+          layer.style.animationDuration = `${60 + Math.random() * 30}s`;
+          layer.style.animationDelay = `-${Math.random() * 30}s`;
+
+          for (let i = 0; i < count; i += 1) {
+            const star = document.createElement("div");
+            star.className = "star";
+
+            const size = Math.random() * (sizeRange[1] - sizeRange[0]) + sizeRange[0];
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+
+            const scale = (0.7 + Math.random() * 0.6).toFixed(2);
+            const scaleStart = (scale * 0.85).toFixed(2);
+            const scaleMid = (scale * 1.05).toFixed(2);
+            const angle = Math.random() * Math.PI * 2;
+            const travel = Math.random() * (travelRange[1] - travelRange[0]) + travelRange[0];
+            const depth = (Math.random() - 0.5) * travel * 0.3;
+            const driftDuration = (
+              Math.random() * (driftDurationRange[1] - driftDurationRange[0]) + driftDurationRange[0]
+            ).toFixed(2);
+            const twinkleDuration = (
+              Math.random() * (twinkleRange[1] - twinkleRange[0]) + twinkleRange[0]
+            ).toFixed(2);
+
+            star.style.setProperty("--scale-base", scale);
+            star.style.setProperty("--scale-start", scaleStart);
+            star.style.setProperty("--scale-mid", scaleMid);
+            star.style.setProperty("--drift-x", `${Math.cos(angle) * travel}px`);
+            star.style.setProperty("--drift-y", `${Math.sin(angle) * travel}px`);
+            star.style.setProperty("--drift-z", `${depth}px`);
+            star.style.setProperty("--drift-duration", `${driftDuration}s`);
+            star.style.setProperty("--drift-delay", `-${(Math.random() * driftDurationRange[1]).toFixed(2)}s`);
+            star.style.setProperty("--twinkle-duration", `${twinkleDuration}s`);
+            star.style.setProperty("--twinkle-delay", `-${(Math.random() * 6).toFixed(2)}s`);
+
+            layer.appendChild(star);
+          }
+        }
+
+        createStars("layer1", 140, [1, 2], [80, 160], [90, 140], [4, 7]);
+        createStars("layer2", 95, [2, 3], [140, 240], [120, 180], [5, 8]);
+        createStars("layer3", 65, [3, 4], [200, 320], [160, 220], [6, 9]);
+
+        document.addEventListener("mousemove", (event) => {
+          const x = event.clientX / window.innerWidth - 0.5;
+          const y = event.clientY / window.innerHeight - 0.5;
+
+          document.getElementById("layer1")?.style.setProperty("--offset-x", `${x * 10}px`);
+          document.getElementById("layer1")?.style.setProperty("--offset-y", `${y * 10}px`);
+          document.getElementById("layer2")?.style.setProperty("--offset-x", `${x * 20}px`);
+          document.getElementById("layer2")?.style.setProperty("--offset-y", `${y * 20}px`);
+          document.getElementById("layer3")?.style.setProperty("--offset-x", `${x * 40}px`);
+          document.getElementById("layer3")?.style.setProperty("--offset-y", `${y * 40}px`);
+        });
+      });
+    </script>
+  </body>
 </html>
