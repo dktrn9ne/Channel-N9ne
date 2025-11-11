@@ -230,73 +230,113 @@ button:hover { background: #00ffff; }
 
 /* 🎥 Previous Streams */
 #archive-section {
-  margin-top: 50px;
-  width: 95%;
-  max-width: 1200px;
-  text-align: center;
+  margin-top: 40px;
+  width: 100%;
   color: #00bfff;
+}
+.carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.carousel-header h2 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+}
+.carousel-controls {
+  display: flex;
+  gap: 10px;
+}
+.carousel-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 191, 255, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  color: #00ffff;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.carousel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+}
+.carousel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.carousel-wrapper {
+  position: relative;
 }
 #archive-carousel {
   display: flex;
   gap: 20px;
   overflow-x: auto;
-  padding: 10px 30px 20px 30px;
+  padding: 10px 4px 10px 4px;
   scroll-snap-type: x mandatory;
-  scroll-padding: 30px;
-  justify-content: flex-start;
+  scroll-padding: 16px;
   box-sizing: border-box;
   scroll-behavior: smooth;
 }
-#archive-carousel::-webkit-scrollbar { display: none; }
-.archive-card {
-  position: relative;
-  flex: 0 0 auto;
-  width: 260px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 0 6px rgba(0,255,255,0.3);
+#archive-carousel:focus-visible {
+  outline: 2px solid rgba(0, 255, 255, 0.7);
+  outline-offset: 6px;
+}
+#archive-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+#archive-carousel::-webkit-scrollbar-thumb {
+  background: rgba(0, 191, 255, 0.4);
+  border-radius: 3px;
+}
+.carousel-slide {
+  flex: 0 0 clamp(260px, 32vw, 360px);
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
   scroll-snap-align: center;
-  text-align: left;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slide-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
   overflow: hidden;
 }
-.archive-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(0,255,255,0.5);
-}
-.archive-card img {
+.slide-player iframe {
   width: 100%;
-  border-radius: 8px;
-  cursor: pointer;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
 }
-.archive-meta {
+.slide-info {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
-.duration-tag {
-  font-size: 0.85em;
-  color: #00bfff;
+.slide-title {
+  font-size: 1rem;
+  margin: 0;
+  color: #e8f9ff;
 }
-.watch-overlay {
-  position: absolute;
-  inset: 10px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #00ffff;
-  font-weight: bold;
-  font-size: 1.1em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 8px;
-  text-shadow: 0 0 8px #00ffff;
+.slide-meta {
+  font-size: 0.85rem;
+  color: #7fd9ff;
 }
-.archive-card:hover .watch-overlay {
-  opacity: 1;
+.slide-meta span + span::before {
+  content: "•";
+  margin: 0 6px;
+  color: rgba(127, 217, 255, 0.7);
 }
 
 /* 📱 MOBILE OPTIMIZATION */
@@ -315,6 +355,16 @@ button:hover { background: #00ffff; }
     justify-content: center;
     padding-right: 0;
     margin-top: 10px;
+  }
+  #archive-section {
+    width: 95%;
+  }
+  .carousel-slide {
+    flex-basis: clamp(240px, 80vw, 360px);
+  }
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
   }
   #chat {
     width: 95%;
@@ -356,6 +406,19 @@ button:hover { background: #00ffff; }
           <img src="sub.png" alt="Subscribe" class="live" />
         </a>
       </div>
+
+      <section id="archive-section">
+        <div class="carousel-header">
+          <h2>Previous Streams</h2>
+          <div class="carousel-controls">
+            <button type="button" class="carousel-btn" data-carousel="prev" aria-label="Scroll previous">‹</button>
+            <button type="button" class="carousel-btn" data-carousel="next" aria-label="Scroll next">›</button>
+          </div>
+        </div>
+        <div class="carousel-wrapper">
+          <div id="archive-carousel" tabindex="0" aria-live="polite" aria-label="Previous streams carousel" role="region"></div>
+        </div>
+      </section>
     </div>
 
     <!-- 💬 Chat -->
@@ -372,12 +435,6 @@ button:hover { background: #00ffff; }
         <button id="send">Send</button>
       </div>
     </div>
-  </div>
-
-  <hr style="width:80%; border: 1px solid rgba(0,255,255,0.2); margin: 40px auto;">
-  <div id="archive-section">
-    <h2>Previous Streams</h2>
-    <div id="archive-carousel"></div>
   </div>
 </div>
 
@@ -409,19 +466,40 @@ async function loadArchives() {
       return;
     }
     streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    streams.forEach((s) => {
+    streams.slice(0, 10).forEach((s) => {
+      if (!s.playback_id) return;
       const safeTitle = s.title || "Previous Stream";
       const created = new Date(s.created_at);
-      const dateLabel = isNaN(created) ? "" : created.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
-      const card = document.createElement("div");
-      card.classList.add("archive-card");
-      card.innerHTML = `
-        <img src="${s.thumbnail_url}" alt="${safeTitle}" />
-        <div class="watch-overlay">▶️ Watch Replay</div>
-        <div class="archive-meta"><span>${safeTitle}${dateLabel ? " — " + dateLabel : ""}</span></div>
-        <div class="archive-meta"><span class="duration-tag">${s.duration || "—"}</span><span>👁️ ${s.views || 0}</span></div>`;
-      card.addEventListener("click",()=>openPlayback(s.playback_id,safeTitle));
-      container.appendChild(card);
+      const dateLabel = isNaN(created)
+        ? ""
+        : created.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+      const duration = s.duration || "Duration unavailable";
+      const viewCount = Number.isFinite(Number(s.views)) ? Number(s.views) : 0;
+      const slide = document.createElement("div");
+      slide.classList.add("carousel-slide");
+      slide.innerHTML = `
+        <div class="slide-player">
+          <iframe
+            src="https://player.mux.com/${s.playback_id}"
+            title="${safeTitle}"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        <div class="slide-info">
+          <h3 class="slide-title">${safeTitle}</h3>
+          <p class="slide-meta">
+            ${dateLabel ? `<span>${dateLabel}</span>` : ""}
+            <span>${duration}</span>
+            <span>👁️ ${viewCount.toLocaleString()}</span>
+          </p>
+        </div>`;
+      container.appendChild(slide);
     });
   } catch(e){
     console.error(e);
@@ -429,20 +507,35 @@ async function loadArchives() {
     container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
   }
 }
-function openPlayback(id,title){
-  const modal=document.getElementById("playback-modal");
-  const player=document.getElementById("archive-player");
-  player.setAttribute("playback-id",id);
-  player.setAttribute("metadata-video-title",title);
-  modal.style.display="flex";
-  document.body.style.overflow="hidden";
-}
-document.getElementById("close-modal").addEventListener("click",()=>{
-  const modal=document.getElementById("playback-modal");
-  const player=document.getElementById("archive-player");
-  player.pause(); modal.style.display="none"; document.body.style.overflow="auto";
-});
 loadArchives();
+
+function setupCarouselControls(){
+  const container=document.getElementById("archive-carousel");
+  const prev=document.querySelector('[data-carousel="prev"]');
+  const next=document.querySelector('[data-carousel="next"]');
+  if(!container||!prev||!next) return;
+  const scrollSize=()=>Math.max(container.clientWidth*0.9,240);
+  const updateButtons=()=>{
+    const maxScroll=container.scrollWidth-container.clientWidth;
+    const atStart=container.scrollLeft<=4;
+    const atEnd=container.scrollLeft>=maxScroll-4;
+    prev.disabled=atStart||maxScroll<=0;
+    next.disabled=atEnd||maxScroll<=0;
+  };
+  prev.addEventListener("click",()=>{
+    container.scrollBy({left:-scrollSize(),behavior:"smooth"});
+  });
+  next.addEventListener("click",()=>{
+    container.scrollBy({left:scrollSize(),behavior:"smooth"});
+  });
+  container.addEventListener("scroll",updateButtons,{passive:true});
+  const observer=new MutationObserver(()=>{
+    updateButtons();
+  });
+  observer.observe(container,{childList:true});
+  updateButtons();
+}
+setupCarouselControls();
 
 /* SUPABASE CHAT */
 const SUPABASE_URL="https://kidmxnxkhyhaehzexatm.supabase.co";
@@ -691,12 +784,5 @@ document.addEventListener("mousemove",(e)=>{
 });
 </script>
 
-<!-- 🎬 Playback Modal -->
-<div id="playback-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;justify-content:center;align-items:center;flex-direction:column;padding:20px;">
-  <button id="close-modal" style="align-self:flex-end;background:none;border:none;color:#00ffff;font-size:1.5em;cursor:pointer;margin-bottom:10px;">✖</button>
-  <div class="mux-player-container" style="width:90%;max-width:900px;">
-    <mux-player id="archive-player" stream-type="on-demand" primary-color="#00bfff" metadata-video-title="Previous Stream" playsinline controls></mux-player>
-  </div>
-</div>
 </body>
 </html>
