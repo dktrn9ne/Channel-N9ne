@@ -81,9 +81,10 @@ body { min-height: 100vh; position: relative; }
   grid-template-columns: minmax(0, 1.7fr) minmax(360px, 1.35fr);
   align-items: flex-start;
   justify-content: center;
-  gap: 22px;
-  width: 97%;
-  max-width: 1440px;
+  align-items: flex-start;
+  gap: 20px;
+  width: 95%;
+  max-width: 1200px;
   box-sizing: border-box;
 }
 .stream-column {
@@ -144,14 +145,14 @@ mux-player { width: 100%; height: 100%; }
 
 /* CHAT */
 #chat {
+  flex: 1.5;
   display: flex;
   flex-direction: column;
   border: 1px solid #333;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.35);
   padding: 10px;
-  height: fit-content;
-  max-height: 560px;
+  max-height: 720px;
   width: 100%;
   box-sizing: border-box;
   backdrop-filter: blur(4px);
@@ -179,7 +180,7 @@ mux-player { width: 100%; height: 100%; }
 }
 #talkjs-container {
   flex: 1;
-  height: clamp(360px, 55vh, 520px);
+  min-height: 480px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #222;
