@@ -448,6 +448,8 @@ async function loadArchives() {
     typeof window !== "undefined" && window.location && window.location.origin
       ? `${window.location.origin}/api/get-mux-streams`
       : defaultEndpoint;
+  const candidates = [originEndpoint, defaultEndpoint];
+  const container = document.getElementById("archive-carousel");
 
   try {
     let streams = null;
@@ -526,8 +528,10 @@ async function loadArchives() {
     });
   } catch(e){
     console.error(e);
-    const container = document.getElementById("archive-carousel");
-    container.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
+    const fallbackContainer = document.getElementById("archive-carousel");
+    if (fallbackContainer) {
+      fallbackContainer.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
+    }
   }
 }
 loadArchives();
@@ -707,8 +711,8 @@ const messageChannel=supabase
     addMessage(payload.new);
   });
 
-messageChannel
-  .subscribe((status)=>{
+try {
+  messageChannel.subscribe((status)=>{
     if(status==="SUBSCRIBED"){
       isConnected=true;
       setChatStatus("Connected. Say hello!","success");
@@ -724,14 +728,14 @@ messageChannel
       updateViewerLabel("Chat offline");
     }
     updateSendState();
-  })
-  .catch((err)=>{
-    console.error("Failed to subscribe to chat updates",err);
-    isConnected=false;
-    setChatStatus("Chat unavailable. Please refresh.","error");
-    updateViewerLabel("Chat offline");
-    updateSendState();
   });
+} catch (err) {
+  console.error("Failed to subscribe to chat updates",err);
+  isConnected=false;
+  setChatStatus("Chat unavailable. Please refresh.","error");
+  updateViewerLabel("Chat offline");
+  updateSendState();
+}
 
 /* STARS */
 function createStars(layerId,count,sizeRange,travelRange,driftDurationRange,twinkleRange){
