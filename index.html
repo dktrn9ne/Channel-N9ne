@@ -1,244 +1,815 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Starry Background with Logo + Livestream</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-      overflow-x: hidden;
-      font-family: 'Arial', sans-serif;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Channel N9NE Live</title>
 
-    .star-layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 1;
-      pointer-events: none;
-    }
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+body { min-height: 100vh; position: relative; }
 
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-    }
+/* ✨ Stars */
+.star-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  --offset-x: 0px;
+  --offset-y: 0px;
+  --pulse-translate: 0px;
+  --pulse-scale: 1;
+  transform: translate3d(calc(var(--offset-x)), calc(var(--offset-y) + var(--pulse-translate)), 0) scale(var(--pulse-scale));
+  animation: layerPulse 60s ease-in-out infinite;
+}
+.star {
+  position: absolute;
+  background: radial-gradient(circle at 35% 35%, #fff, rgba(255,255,255,0.4) 55%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px rgba(0, 200, 255, 0.65));
+  mix-blend-mode: screen;
+  --scale-base: 1;
+  --scale-start: 0.9;
+  --scale-mid: 1.05;
+  --drift-x: 0px;
+  --drift-y: 0px;
+  --drift-z: 0px;
+  --twinkle-duration: 6s;
+  --twinkle-delay: 0s;
+  --drift-duration: 120s;
+  --drift-delay: 0s;
+  animation: twinkle var(--twinkle-duration) ease-in-out var(--twinkle-delay) infinite,
+             drift var(--drift-duration) linear var(--drift-delay) infinite;
+}
 
-    #content {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 5vh;
-      min-height: 100vh;
-    }
+/* Layout */
+#content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5vh 0 100px 0;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#content img {
+  width: 80%;
+  max-width: 600px;
+  height: auto;
+  margin-bottom: 30px;
+}
 
-    #content img {
-      width: 750px;
-      max-width: 90vw;
-      height: auto;
-      margin-bottom: 40px;
-    }
+/* STREAM + CHAT */
+.stream-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  width: 95%;
+  max-width: 1200px;
+  box-sizing: border-box;
+}
+.stream-column {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mux-player-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+mux-player { width: 100%; height: 100%; }
 
-    .mux-player-container {
-      width: 80%;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
-      position: relative;
-      z-index: 10;
-    }
+/* BUTTONS */
+.button-row {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: clamp(14px, 2.4vw, 28px);
+  width: 100%;
+  margin-top: 16px;
+  padding: 0 clamp(6px, 2vw, 18px);
+  box-sizing: border-box;
+}
+.n9ne-btn {
+  flex: 0 1 clamp(80px, 18vw, 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 600px;
+  cursor: pointer;
+}
+.n9ne-btn img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: rotateX(12deg);
+  transition: all 0.25s ease;
+  filter: drop-shadow(0 0 2px rgba(0,191,255,0.8));
+  opacity: 0.95;
+}
+.n9ne-btn img:hover {
+  transform: rotateX(0deg) rotateY(8deg) translateZ(3px) scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(0,255,255,1));
+  opacity: 1;
+}
+@keyframes pulseGlow {
+  0%,100%{filter:drop-shadow(0 0 2px rgba(0,255,255,.6));}
+  50%{filter:drop-shadow(0 0 8px rgba(0,255,255,1));}
+}
+.n9ne-btn img.live { animation: pulseGlow 2.5s infinite; }
 
-    mux-player {
-      width: 100%;
-      height: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-    }
+/* CHAT */
+#chat {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  max-height: 80vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  color: #00bfff;
+}
+#chat-box {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+.chat-status {
+  font-size: 0.85em;
+  color: #99cce6;
+  margin-bottom: 6px;
+  min-height: 1.2em;
+}
+.chat-status.success {
+  color: #68ffda;
+}
+.chat-status.error {
+  color: #ff8a8a;
+}
+.msg {
+  margin-bottom: 6px;
+  line-height: 1.4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+.msg .message-text { color: #fff; }
+.user { color: #00ffff; font-weight: bold; }
+.time { color: #777; font-size: 0.8em; margin-left: 5px; }
+.chat-empty {
+  color: #9db3bf;
+  font-style: italic;
+  text-align: center;
+  margin: 16px 0;
+}
+#chat-inputs {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+input, button {
+  border: none;
+  border-radius: 5px;
+  padding: 8px;
+}
+input {
+  flex: 1;
+  background: #111;
+  color: #fff;
+}
+button {
+  background: #00bfff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+button:hover { background: #00ffff; }
 
-    /* Chat styles */
-    .chat-container {
-      width: 80%;
-      max-width: 960px;
-      margin: 40px auto 80px;
-      padding: 20px;
-      background: rgba(9, 10, 15, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      color: #fff;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
+/* 🎥 Previous Streams */
+#archive-section {
+  margin-top: 40px;
+  width: 100%;
+  color: #00bfff;
+  text-align: center;
+}
+.carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.carousel-header h2 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+}
+.carousel-controls {
+  display: flex;
+  gap: 10px;
+}
+.carousel-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 191, 255, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  color: #00ffff;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.carousel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+}
+.carousel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.carousel-wrapper {
+  position: relative;
+}
+#archive-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 4px 10px 4px;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 16px;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+#archive-carousel:focus-visible {
+  outline: 2px solid rgba(0, 255, 255, 0.7);
+  outline-offset: 6px;
+}
+#archive-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+#archive-carousel::-webkit-scrollbar-thumb {
+  background: rgba(0, 191, 255, 0.4);
+  border-radius: 3px;
+}
+.carousel-slide {
+  flex: 0 0 clamp(260px, 32vw, 360px);
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slide-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.slide-player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+}
+.slide-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.slide-title {
+  font-size: 1rem;
+  margin: 0;
+  color: #e8f9ff;
+}
+.slide-meta {
+  font-size: 0.85rem;
+  color: #7fd9ff;
+}
+.slide-meta span + span::before {
+  content: "•";
+  margin: 0 6px;
+  color: rgba(127, 217, 255, 0.7);
+}
 
-    .chat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-      gap: 12px;
-    }
+/* 📱 MOBILE OPTIMIZATION */
+@media (max-width: 900px) {
+  #content { padding: 2vh 0 80px 0; }
+  .stream-wrapper {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .stream-column {
+    align-items: center;
+    width: 100%;
+  }
+  .button-row {
+    justify-content: center;
+    padding-right: 0;
+    margin-top: 10px;
+  }
+  #archive-section {
+    width: 95%;
+  }
+  .carousel-slide {
+    flex-basis: clamp(240px, 80vw, 360px);
+  }
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+  #chat {
+    width: 95%;
+    max-height: 400px;
+  }
+}
+</style>
 
-    .chat-header h2 {
-      margin: 0;
-      font-size: 1.1rem;
-      letter-spacing: 0.5px;
-    }
-
-    .chat-header input {
-      flex: 1;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-    }
-
-    .chat-box {
-      height: 260px;
-      overflow-y: auto;
-      padding: 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      margin-bottom: 12px;
-    }
-
-    .chat-message {
-      margin-bottom: 8px;
-      line-height: 1.4;
-      word-break: break-word;
-    }
-
-    .chat-message .user {
-      color: #00bfff;
-      font-weight: bold;
-      margin-right: 6px;
-    }
-
-    .chat-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .chat-actions input[type="text"] {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-    }
-
-    .chat-actions button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #00bfff, #7ad7ff);
-      color: #04101d;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.1s ease, box-shadow 0.2s ease;
-    }
-
-    .chat-actions button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 16px rgba(0, 191, 255, 0.3);
-    }
-
-    .chat-actions button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-  </style>
-
-  <!-- Mux Player library -->
-  <script src="https://unpkg.com/@mux/mux-player"></script>
+<script src="https://unpkg.com/@mux/mux-player"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
-  <!-- STAR LAYERS -->
-  <div class="star-layer" id="layer1"></div>
-  <div class="star-layer" id="layer2"></div>
-  <div class="star-layer" id="layer3"></div>
+<!-- 🌠 Stars -->
+<div class="star-layer" id="layer1"></div>
+<div class="star-layer" id="layer2"></div>
+<div class="star-layer" id="layer3"></div>
 
-  <!-- MAIN CONTENT -->
-  <div id="content">
-    <!-- Replace this URL with your GitHub-hosted logo image -->
-    <img src="channel9.png" alt="9 Logo" />
+<div id="content">
+  <img src="channel9.png" alt="Channel N9NE Logo"/>
 
-    <!-- ✅ MUX Livestream Player -->
-    <div class="mux-player-container">
-      <mux-player
-        stream-type="live"
-        playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-        primary-color="#00bfff"
-        metadata-video-title="Live Stream"
-        metadata-viewer-user-id="viewer-001"
-        autoplay
-        muted
-      ></mux-player>
+  <div class="stream-wrapper">
+    <div class="stream-column">
+      <div class="mux-player-container">
+        <mux-player
+          stream-type="live"
+          playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
+          primary-color="#00bfff"
+          metadata-video-title="Live Stream"
+          autoplay muted>
+        </mux-player>
+      </div>
+
+      <div class="button-row">
+        <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
+          <img src="venmo.png" alt="Venmo" class="live" />
+        </a>
+        <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
+          <img src="sub.png" alt="Subscribe" class="live" />
+        </a>
+      </div>
+
+      <section id="archive-section">
+        <div class="carousel-header">
+          <h2>Previous Streams</h2>
+          <div class="carousel-controls">
+            <button type="button" class="carousel-btn" data-carousel="prev" aria-label="Scroll previous">‹</button>
+            <button type="button" class="carousel-btn" data-carousel="next" aria-label="Scroll next">›</button>
+          </div>
+        </div>
+        <div class="carousel-wrapper">
+          <div id="archive-carousel" tabindex="0" aria-live="polite" aria-label="Previous streams carousel" role="region"></div>
+        </div>
+      </section>
     </div>
 
-    <!-- Chat -->
-    <div class="chat-container">
-      <div class="chat-header">
-        <h2>Live Chat</h2>
-        <input id="username" type="text" placeholder="Choose a username (optional)" />
+    <!-- 💬 Chat -->
+    <div id="chat">
+      <div id="chat-header">
+        <span>💬 Chat is Live</span>
+        <span id="viewer-count">0 watching</span>
       </div>
-      <div id="chat-box" class="chat-box" aria-live="polite"></div>
-      <div class="chat-actions">
-        <input id="msg" type="text" placeholder="Type your message" autocomplete="off" />
-        <button id="send" type="button">Send</button>
+      <div id="chat-status" class="chat-status" role="status" aria-live="polite">Connecting…</div>
+      <div id="chat-box"></div>
+      <div id="chat-inputs">
+        <input id="username" placeholder="Name"/>
+        <input id="msg" placeholder="Say something..."/>
+        <button id="send">Send</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Stars Script -->
-  <script>
-    const layers = [
-      { id: 'layer1', count: 40, size: 1, speed: 0.3 },
-      { id: 'layer2', count: 30, size: 2, speed: 0.2 },
-      { id: 'layer3', count: 20, size: 3, speed: 0.1 }
-    ];
+<!-- 🎥 Archives + Chat + Stars -->
+<script>
+/* MUX ARCHIVES */
+async function loadArchives() {
+  const defaultEndpoint = "https://fd80be9b-e6fa-45ad-b500-ed4d57b7fa4f/api/get-mux-streams";
+  const originEndpoint =
+    typeof window !== "undefined" && window.location && window.location.origin
+      ? `${window.location.origin}/api/get-mux-streams`
+      : defaultEndpoint;
+  const candidates = [originEndpoint, defaultEndpoint];
+  const container = document.getElementById("archive-carousel");
 
-    layers.forEach(layer => {
-      const container = document.getElementById(layer.id);
-      for (let i = 0; i < layer.count; i++) {
-        const star = document.createElement('div');
-        star.classList.add('star');
-        star.style.width = `${layer.size}px`;
-        star.style.height = `${layer.size}px`;
+  try {
+    let streams = null;
+    let lastError = null;
 
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        star.style.left = `${x}vw`;
-        star.style.top = `${y}vh`;
-
-        const duration = (Math.random() * 10 + 10) / layer.speed;
-        const delay = Math.random() * 20;
-
-        star.style.animation = `fall ${duration}s linear ${delay}s infinite`;
-
-        container.appendChild(star);
+    for (const endpoint of candidates) {
+      try {
+        const res = await fetch(endpoint, {
+          headers: { Accept: "application/json" },
+          mode: "cors",
+        });
+        if (!res.ok) {
+          lastError = new Error(`Request to ${endpoint} failed with status ${res.status}`);
+          continue;
+        }
+        const data = await res.json();
+        if (!Array.isArray(data)) {
+          lastError = new Error(`Unexpected response shape from ${endpoint}`);
+          continue;
+        }
+        streams = data;
+        break;
+      } catch (err) {
+        lastError = err;
       }
+    }
+
+    if (!streams) {
+      throw lastError || new Error("Previous streams could not be loaded");
+    }
+
+    if (!container) {
+      return;
+    }
+
+    container.innerHTML = "";
+    if (streams.length === 0) {
+      container.innerHTML = '<p style="color:#888">No past streams found.</p>';
+      return;
+    }
+    streams.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    streams.slice(0, 10).forEach((s) => {
+      if (!s.playback_id) return;
+      const safeTitle = s.title || "Previous Stream";
+      const created = new Date(s.created_at);
+      const dateLabel = isNaN(created)
+        ? ""
+        : created.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+      const duration = s.duration || "Duration unavailable";
+      const viewCount = Number.isFinite(Number(s.views)) ? Number(s.views) : 0;
+      const slide = document.createElement("div");
+      slide.classList.add("carousel-slide");
+      slide.innerHTML = `
+        <div class="slide-player">
+          <iframe
+            src="https://player.mux.com/${s.playback_id}"
+            title="${safeTitle}"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        <div class="slide-info">
+          <h3 class="slide-title">${safeTitle}</h3>
+          <p class="slide-meta">
+            ${dateLabel ? `<span>${dateLabel}</span>` : ""}
+            <span>${duration}</span>
+            <span>👁️ ${viewCount.toLocaleString()}</span>
+          </p>
+        </div>`;
+      container.appendChild(slide);
     });
+  } catch(e){
+    console.error(e);
+    const fallbackContainer = document.getElementById("archive-carousel");
+    if (fallbackContainer) {
+      fallbackContainer.innerHTML = '<p style="color:#f66">Unable to load previous streams right now. Please try again later.</p>';
+    }
+  }
+}
+loadArchives();
 
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes fall {
-        0% { transform: translateY(0); opacity: 1; }
-        100% { transform: translateY(100vh); opacity: 0.3; }
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
+function setupCarouselControls(){
+  const container=document.getElementById("archive-carousel");
+  const prev=document.querySelector('[data-carousel="prev"]');
+  const next=document.querySelector('[data-carousel="next"]');
+  if(!container||!prev||!next) return;
+  const scrollSize=()=>Math.max(container.clientWidth*0.9,240);
+  const updateButtons=()=>{
+    const maxScroll=container.scrollWidth-container.clientWidth;
+    const atStart=container.scrollLeft<=4;
+    const atEnd=container.scrollLeft>=maxScroll-4;
+    prev.disabled=atStart||maxScroll<=0;
+    next.disabled=atEnd||maxScroll<=0;
+  };
+  prev.addEventListener("click",()=>{
+    container.scrollBy({left:-scrollSize(),behavior:"smooth"});
+  });
+  next.addEventListener("click",()=>{
+    container.scrollBy({left:scrollSize(),behavior:"smooth"});
+  });
+  container.addEventListener("scroll",updateButtons,{passive:true});
+  const observer=new MutationObserver(()=>{
+    updateButtons();
+  });
+  observer.observe(container,{childList:true});
+  updateButtons();
+}
+setupCarouselControls();
 
-  <!-- Supabase + chat wiring -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="chat.js" defer></script>
+/* SUPABASE CHAT */
+const SUPABASE_URL="https://kidmxnxkhyhaehzexatm.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const chatBox=document.getElementById("chat-box");
+const usernameInput=document.getElementById("username");
+const msgInput=document.getElementById("msg");
+const sendBtn=document.getElementById("send");
+const chatStatus=document.getElementById("chat-status");
+const viewerCount=document.getElementById("viewer-count");
+
+let isConnected=false;
+let isSending=false;
+
+function updateViewerLabel(label){
+  if(viewerCount) viewerCount.textContent=label;
+}
+
+function setChatStatus(message,tone="info"){
+  if(!chatStatus)return;
+  chatStatus.textContent=message;
+  chatStatus.classList.remove("success","error");
+  if(tone==="success") chatStatus.classList.add("success");
+  else if(tone==="error") chatStatus.classList.add("error");
+}
+
+function showEmptyState(){
+  if(!chatBox)return;
+  chatBox.innerHTML='<p class="chat-empty">Be the first to say hello ✨</p>';
+  chatBox.dataset.empty="true";
+}
+
+function clearEmptyState(){
+  if(chatBox?.dataset.empty){
+    chatBox.innerHTML="";
+    delete chatBox.dataset.empty;
+  }
+}
+
+function addMessage(message){
+  if(!message||!chatBox)return;
+  clearEmptyState();
+  const div=document.createElement("div");
+  div.classList.add("msg");
+
+  const nameSpan=document.createElement("span");
+  nameSpan.classList.add("user");
+  nameSpan.textContent=message.username?.trim()||"Guest";
+
+  const textSpan=document.createElement("span");
+  textSpan.classList.add("message-text");
+  textSpan.textContent=message.text||"";
+
+  const timeSpan=document.createElement("span");
+  timeSpan.classList.add("time");
+  const created=message.created_at?new Date(message.created_at):new Date();
+  if(!Number.isNaN(created.getTime())){
+    timeSpan.textContent=created.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  }
+
+  div.appendChild(nameSpan);
+  div.appendChild(document.createTextNode(": "));
+  div.appendChild(textSpan);
+  div.appendChild(timeSpan);
+  chatBox.appendChild(div);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function updateSendState(){
+  if(!sendBtn||!msgInput)return;
+  const hasText=msgInput.value.trim().length>0;
+  sendBtn.disabled=!isConnected||!hasText||isSending;
+}
+
+async function loadMessages(){
+  if(!chatBox)return;
+  try{
+    const {data,error}=await supabase.from("messages").select("*").order("created_at",{ascending:true}).limit(100);
+    if(error) throw error;
+    if(!data||data.length===0){
+      showEmptyState();
+    }else{
+      chatBox.innerHTML="";
+      data.forEach(addMessage);
+    }
+    if(!isConnected){
+      setChatStatus("Chat history loaded. Connecting…");
+      updateViewerLabel("Connecting…");
+    }
+  }catch(err){
+    console.error("Failed to load chat history",err);
+    setChatStatus("Unable to load chat history. Retrying…","error");
+    updateViewerLabel("Chat offline");
+    showEmptyState();
+    setTimeout(loadMessages,5000);
+  }
+}
+
+async function sendMessage(){
+  if(!sendBtn||!msgInput||!usernameInput)return;
+  const text=msgInput.value.trim();
+  if(!text||!isConnected||isSending)return;
+  const safeName=usernameInput.value.trim().slice(0,24)||"Guest";
+  isSending=true;
+  updateSendState();
+  const previousLabel=sendBtn.textContent;
+  sendBtn.textContent="Sending…";
+  try{
+    const {error}=await supabase.from("messages").insert([{username:safeName,text}]);
+    if(error) throw error;
+    msgInput.value="";
+    updateSendState();
+  }catch(err){
+    console.error("Failed to send message",err);
+    setChatStatus("Message failed to send. Please try again.","error");
+  }finally{
+    isSending=false;
+    sendBtn.textContent=previousLabel;
+    updateSendState();
+  }
+}
+
+if(msgInput){
+  msgInput.addEventListener("input",updateSendState);
+  msgInput.addEventListener("keydown",(event)=>{
+    if(event.key==="Enter"&&!event.shiftKey){
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+}
+if(sendBtn){
+  sendBtn.addEventListener("click",sendMessage);
+}
+
+setChatStatus("Connecting…");
+updateViewerLabel("Connecting…");
+showEmptyState();
+updateSendState();
+loadMessages();
+
+const messageChannel=supabase
+  .channel("public:messages")
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},payload=>{
+    addMessage(payload.new);
+  });
+
+try {
+  messageChannel.subscribe((status)=>{
+    if(status==="SUBSCRIBED"){
+      isConnected=true;
+      setChatStatus("Connected. Say hello!","success");
+      updateViewerLabel("Chat online");
+      loadMessages();
+    }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
+      isConnected=false;
+      setChatStatus("Connection lost. Reconnecting…","error");
+      updateViewerLabel("Chat offline");
+    }else if(status==="CLOSED"){
+      isConnected=false;
+      setChatStatus("Chat connection closed.","error");
+      updateViewerLabel("Chat offline");
+    }
+    updateSendState();
+  });
+} catch (err) {
+  console.error("Failed to subscribe to chat updates",err);
+  isConnected=false;
+  setChatStatus("Chat unavailable. Please refresh.","error");
+  updateViewerLabel("Chat offline");
+  updateSendState();
+}
+
+/* STARS */
+function createStars(layerId,count,sizeRange,travelRange,driftDurationRange,twinkleRange){
+  const layer=document.getElementById(layerId);
+  if(!layer) return;
+  layer.style.animationDuration=`${60+Math.random()*30}s`;
+  layer.style.animationDelay=`-${Math.random()*30}s`;
+  for(let i=0;i<count;i++){
+    const s=document.createElement("div");
+    s.classList.add("star");
+    const size=Math.random()*(sizeRange[1]-sizeRange[0])+sizeRange[0];
+    s.style.width=`${size}px`;
+    s.style.height=`${size}px`;
+    s.style.top=`${Math.random()*100}%`;
+    s.style.left=`${Math.random()*100}%`;
+
+    const scale=(0.7+Math.random()*0.6).toFixed(2);
+    const scaleStart=(scale*0.85).toFixed(2);
+    const scaleMid=(scale*1.05).toFixed(2);
+    const angle=Math.random()*Math.PI*2;
+    const travel=Math.random()*(travelRange[1]-travelRange[0])+travelRange[0];
+    const depth=(Math.random()-0.5)*travel*0.3;
+    const driftDuration=(Math.random()*(driftDurationRange[1]-driftDurationRange[0])+driftDurationRange[0]).toFixed(2);
+    const twinkleDuration=(Math.random()*(twinkleRange[1]-twinkleRange[0])+twinkleRange[0]).toFixed(2);
+
+    s.style.setProperty("--scale-base",scale);
+    s.style.setProperty("--scale-start",scaleStart);
+    s.style.setProperty("--scale-mid",scaleMid);
+    s.style.setProperty("--drift-x",`${Math.cos(angle)*travel}px`);
+    s.style.setProperty("--drift-y",`${Math.sin(angle)*travel}px`);
+    s.style.setProperty("--drift-z",`${depth}px`);
+    s.style.setProperty("--drift-duration",`${driftDuration}s`);
+    s.style.setProperty("--drift-delay",`-${(Math.random()*driftDurationRange[1]).toFixed(2)}s`);
+    s.style.setProperty("--twinkle-duration",`${twinkleDuration}s`);
+    s.style.setProperty("--twinkle-delay",`-${(Math.random()*6).toFixed(2)}s`);
+
+    layer.appendChild(s);
+  }
+}
+const starStyle=document.createElement("style");
+starStyle.innerHTML=`
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 2px rgba(0, 140, 255, 0.45)); }
+  45% { opacity: 1; filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.95)); }
+  55% { opacity: 0.85; filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.7)); }
+}
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(var(--scale-start)); }
+  50% { transform: translate3d(calc(var(--drift-x) * 0.5), calc(var(--drift-y) * 0.5), calc(var(--drift-z) * 0.5)) scale(var(--scale-mid)); }
+  100% { transform: translate3d(var(--drift-x), var(--drift-y), var(--drift-z)) scale(var(--scale-base)); }
+}
+@keyframes layerPulse {
+  0%, 100% { --pulse-translate: 0px; --pulse-scale: 1; }
+  50% { --pulse-translate: -12px; --pulse-scale: 1.03; }
+}
+`;
+document.head.appendChild(starStyle);
+createStars("layer1",140,[1,2],[80,160],[90,140],[4,7]);
+createStars("layer2",95,[2,3],[140,240],[120,180],[5,8]);
+createStars("layer3",65,[3,4],[200,320],[160,220],[6,9]);
+document.addEventListener("mousemove",(e)=>{
+  const x=e.clientX/window.innerWidth-0.5;
+  const y=e.clientY/window.innerHeight-0.5;
+  const layer1=document.getElementById("layer1");
+  const layer2=document.getElementById("layer2");
+  const layer3=document.getElementById("layer3");
+  layer1?.style.setProperty("--offset-x",`${x*10}px`);
+  layer1?.style.setProperty("--offset-y",`${y*10}px`);
+  layer2?.style.setProperty("--offset-x",`${x*20}px`);
+  layer2?.style.setProperty("--offset-y",`${y*20}px`);
+  layer3?.style.setProperty("--offset-x",`${x*40}px`);
+  layer3?.style.setProperty("--offset-y",`${y*40}px`);
+});
+</script>
+
 </body>
 </html>
