@@ -150,11 +150,12 @@ mux-player { width: 100%; height: 100%; }
   flex-direction: column;
   border: 1px solid #333;
   border-radius: 10px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.35);
   padding: 10px;
   max-height: none;
   width: 100%;
   box-sizing: border-box;
+  backdrop-filter: blur(4px);
 }
 #chat-header {
   display: flex;
@@ -162,22 +163,35 @@ mux-player { width: 100%; height: 100%; }
   align-items: center;
   font-weight: bold;
   border-bottom: 1px solid #333;
-  padding-bottom: 5px;
-  margin-bottom: 5px;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
   color: #00bfff;
 }
-.discord-embed {
+.chat-subtitle {
+  font-weight: normal;
+  font-size: 0.9rem;
+  color: #7fd9ff;
+}
+#chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+#talkjs-container {
   flex: 1;
+  min-height: 480px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #222;
   background: rgba(0, 0, 0, 0.4);
-  min-height: 100%;
+  box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.08);
 }
-.discord-embed iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+.chat-status {
+  margin: 0;
+  padding: 8px 10px;
+  color: #bfefff;
+  font-size: 0.95rem;
 }
 
 /* 🎥 Previous Streams */
@@ -323,10 +337,14 @@ mux-player { width: 100%; height: 100%; }
     width: 95%;
     max-height: 400px;
   }
+  #talkjs-container {
+    min-height: 360px;
+  }
 }
 </style>
 
 <script src="https://unpkg.com/@mux/mux-player"></script>
+<script src="https://cdn.talkjs.com/talk.js"></script>
 </head>
 
 <body>
@@ -373,22 +391,22 @@ mux-player { width: 100%; height: 100%; }
       </section>
     </div>
 
-    <!-- 💬 Discord Chat -->
+    <!-- 💬 TalkJS Chat -->
     <div id="chat">
       <div id="chat-header">
-        <span>💬 Discord Chat</span>
-        <span>Live community</span>
+        <span>💬 TalkJS Chat</span>
+        <span class="chat-subtitle">Live community</span>
       </div>
-      <div class="discord-embed">
-        <iframe
-          title="Discord chat widget"
-          src="https://discord.com/widget?id=769248822437740594&theme=dark"
-          width="100%"
-          height="100%"
-          allowtransparency="true"
-          frameborder="0"
-          sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
-        </iframe>
+      <div id="chat-body">
+        <div
+          id="talkjs-container"
+          data-app-id="tN5BYQk3"
+          aria-live="polite"
+          aria-label="Channel N9NE live chat"
+        >
+          <div class="chat-status">Connecting to chat…</div>
+        </div>
+        <p id="chat-status" class="chat-status" aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -519,7 +537,105 @@ function setupCarouselControls(){
 }
 setupCarouselControls();
 
-/* Discord chat is embedded via iframe; no additional JS needed here. */
+/* TALKJS CHAT */
+function getViewerProfile() {
+  try {
+    const cached = localStorage.getItem("talkjsViewerProfile");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed?.id && parsed?.name) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("Unable to read TalkJS profile from storage", err);
+  }
+
+  const profile = {
+    id: `viewer-${Math.random().toString(36).slice(2, 10)}`,
+    name: "Channel N9NE Viewer",
+    photoUrl: "https://demo.talkjs.com/img/ronald.jpg",
+    welcomeMessage: "Ready to chat!",
+    role: "default",
+  };
+
+  try {
+    localStorage.setItem("talkjsViewerProfile", JSON.stringify(profile));
+  } catch (err) {
+    console.warn("Unable to persist TalkJS profile", err);
+  }
+
+  return profile;
+}
+
+async function initTalkJSChat() {
+  const chatContainer = document.getElementById("talkjs-container");
+  const status = document.getElementById("chat-status");
+  if (!chatContainer) return;
+
+  const appId = window.TALKJS_APP_ID || chatContainer.dataset.appId || "";
+
+  if (!appId || appId === "YOUR_APP_ID") {
+    const message = "Add your TalkJS app ID to enable live chat.";
+    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
+    if (status) {
+      status.textContent = message;
+    }
+    return;
+  }
+
+  if (typeof Talk === "undefined") {
+    const message = "Chat failed to load. Please try again.";
+    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
+    if (status) {
+      status.textContent = message;
+    }
+    return;
+  }
+
+  try {
+    await Talk.ready;
+    const viewerProfile = getViewerProfile();
+    const me = new Talk.User(viewerProfile);
+    const host = new Talk.User({
+      id: "channel-n9ne-host",
+      name: "Channel N9NE",
+      photoUrl: "https://talkjs.com/images/avatar-1.jpg",
+      welcomeMessage: "Welcome to the live chat!",
+      role: "default",
+    });
+
+    const session = new Talk.Session({ appId, me });
+    window.talkSession = session;
+
+    const conversation = session.getOrCreateConversation("channel-n9ne-live-chat");
+    conversation.setAttributes({
+      subject: "Channel N9NE Live Chat",
+    });
+    conversation.setParticipant(me);
+    conversation.setParticipant(host);
+
+    const chatbox = session.createChatbox(conversation);
+    chatbox.mount(chatContainer);
+
+    if (status) {
+      status.textContent = "";
+    }
+  } catch (err) {
+    console.error("TalkJS initialization failed", err);
+    const message = "Chat is unavailable right now.";
+    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
+    if (status) {
+      status.textContent = message;
+    }
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initTalkJSChat);
+} else {
+  initTalkJSChat();
+}
 
 /* STARS */
 function createStars(layerId,count,sizeRange,travelRange,driftDurationRange,twinkleRange){
