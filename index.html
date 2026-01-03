@@ -78,7 +78,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 6px;
+      margin-bottom: 12px;
       gap: 12px;
     }
 
@@ -97,37 +97,6 @@
       color: #fff;
     }
 
-    .chat-status {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.95rem;
-      margin-bottom: 10px;
-    }
-
-    .chat-status .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-      background: #f0b429;
-      box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.2);
-      transition: background 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .chat-status[data-state="live"] .dot {
-      background: #2ad35b;
-      box-shadow: 0 0 0 4px rgba(42, 211, 91, 0.2);
-    }
-
-    .chat-status[data-state="offline"] .dot {
-      background: #f44336;
-      box-shadow: 0 0 0 4px rgba(244, 67, 54, 0.2);
-    }
-
     .chat-box {
       height: 260px;
       overflow-y: auto;
@@ -136,13 +105,6 @@
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
       margin-bottom: 12px;
-    }
-
-    .chat-placeholder {
-      color: rgba(255, 255, 255, 0.7);
-      text-align: center;
-      padding: 20px 10px;
-      line-height: 1.5;
     }
 
     .chat-message {
@@ -226,10 +188,6 @@
       <div class="chat-header">
         <h2>Live Chat</h2>
         <input id="username" type="text" placeholder="Choose a username (optional)" />
-      </div>
-      <div id="chat-status" class="chat-status" data-state="offline" aria-live="polite">
-        <span><span class="dot" aria-hidden="true"></span><span id="chat-status-text">Connecting…</span></span>
-        <small id="chat-history-hint">Loading chat history</small>
       </div>
       <div id="chat-box" class="chat-box" aria-live="polite"></div>
       <div class="chat-actions">

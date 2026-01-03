@@ -8,27 +8,6 @@
   const msgInput = document.getElementById('msg');
   const sendBtn = document.getElementById('send');
   const username = document.getElementById('username');
-  const statusBar = document.getElementById('chat-status');
-  const statusText = document.getElementById('chat-status-text');
-  const historyHint = document.getElementById('chat-history-hint');
-
-  let isOnline = false;
-  let historyRetryTimer = null;
-
-  function setStatus(state, message, hint) {
-    isOnline = state === 'live';
-    statusBar.dataset.state = state;
-    statusText.textContent = message;
-    historyHint.textContent = hint;
-    sendBtn.disabled = !isOnline;
-    sendBtn.textContent = isOnline ? 'Send' : 'Offline';
-  }
-
-  function showPlaceholder(message) {
-    chatBox.innerHTML = `<div class="chat-placeholder">${message}</div>`;
-  }
-
-  setStatus('offline', 'Connecting…', 'Waiting for realtime handshake');
 
   function addMessage(msg) {
     const div = document.createElement('div');
@@ -41,7 +20,6 @@
   }
 
   async function loadMessages() {
-    clearTimeout(historyRetryTimer);
     const { data, error } = await db
       .from('messages')
       .select('*')
@@ -49,25 +27,16 @@
 
     if (error) {
       console.error('Error loading messages', error);
-      setStatus('offline', 'Chat offline', 'Unable to load chat history. Retrying…');
-      showPlaceholder('Unable to load chat history. Retrying…');
-      historyRetryTimer = setTimeout(loadMessages, 4000);
       return;
     }
 
-    if (!data || data.length === 0) {
-      showPlaceholder('Be the first to say hello ✨');
-    } else {
-      chatBox.innerHTML = '';
-      data.forEach(addMessage);
-    }
-
-    setStatus('live', 'Chat is live', 'History loaded');
+    chatBox.innerHTML = '';
+    data.forEach(addMessage);
   }
 
   async function sendMessage() {
     const text = msgInput.value.trim();
-    if (!text || !isOnline) return;
+    if (!text) return;
 
     sendBtn.disabled = true;
 
@@ -92,13 +61,7 @@
     })
     .subscribe(status => {
       if (status === 'SUBSCRIBED') {
-        setStatus('live', 'Chat is live', 'Connected to realtime');
         loadMessages();
-      }
-
-      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-        setStatus('offline', 'Chat offline', 'Reconnecting…');
-        historyRetryTimer = setTimeout(loadMessages, 4000);
       }
     });
 
