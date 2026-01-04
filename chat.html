@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Chat Overlay</title>
+    <script>
+      // make the background transparent for OBS
+      document.documentElement.style.background = "transparent";
+      document.body.style.background = "transparent";
+      document.body.style.margin = "0";
+      document.body.style.overflow = "hidden";
+    </script>
+    <script src="https://cdn.talkjs.com/talk.js"></script>
+    <style>
+      html, body { width: 100%; height: 100%; background: transparent; }
+      #talkjs-container {
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+      }
+      /* optional: nudge / shrink etc */
+    </style>
+  </head>
+  <body>
+    <div id="talkjs-container"></div>
+
+    <script>
+      // IMPORTANT:
+      // Do NOT put your secret key here.
+      // Use TalkJS "session token" (recommended) or other safe auth method.
+      const TALKJS_APP_ID = "tN5BYQk3";
+
+      Talk.ready.then(() => {
+        const me = new Talk.User({
+          id: "streamer",
+          name: "Streamer",
+          role: "default"
+        });
+
+        const session = new Talk.Session({
+          appId: TALKJS_APP_ID,
+          me
+          // If you use session tokens, add: token: "..."
+        });
+
+        const conversation = session.getOrCreateConversation("my-stream-chat");
+        conversation.setParticipant(me);
+
+        // Create a "chatbox" view inside the container
+        const chatbox = session.createChatbox(conversation);
+        chatbox.mount(document.getElementById("talkjs-container"));
+      });
+    </script>
+  </body>
+</html>
