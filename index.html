@@ -6,6 +6,10 @@
 <title>Channel N9NE Live</title>
 
 <style>
+:root {
+  --content-gutter: clamp(14px, 4vw, 30px);
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -63,14 +67,15 @@ body { min-height: 100vh; position: relative; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5vh 0 100px 0;
+  padding: 5vh var(--content-gutter) 100px var(--content-gutter);
   min-height: 100vh;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 #content img {
-  width: 80%;
-  max-width: 600px;
+  width: min(80%, 520px);
   height: auto;
   margin-bottom: 30px;
 }
@@ -82,9 +87,8 @@ body { min-height: 100vh; position: relative; }
   align-items: flex-start;
   justify-content: center;
   align-items: flex-start;
-  gap: 20px;
-  width: 95%;
-  max-width: 1200px;
+  gap: clamp(16px, 3vw, 26px);
+  width: 100%;
   box-sizing: border-box;
 }
 .stream-column {
@@ -151,7 +155,7 @@ mux-player { width: 100%; height: 100%; }
   border: 1px solid #333;
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.35);
-  padding: 10px;
+  padding: 14px 16px;
   max-height: 720px;
   width: 100%;
   box-sizing: border-box;
@@ -181,6 +185,7 @@ mux-player { width: 100%; height: 100%; }
 #talkjs-container {
   flex: 1;
   min-height: 480px;
+  height: 70vh;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #222;
@@ -206,6 +211,7 @@ mux-player { width: 100%; height: 100%; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 .carousel-header h2 {
@@ -307,13 +313,14 @@ mux-player { width: 100%; height: 100%; }
 }
 
 /* 📱 MOBILE OPTIMIZATION */
-  @media (max-width: 900px) {
-    #content { padding: 2vh 0 80px 0; }
+@media (max-width: 900px) {
+  #content { padding: 3vh var(--content-gutter) 80px var(--content-gutter); }
   .stream-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
+    gap: 18px;
   }
   .stream-column {
     align-items: center;
@@ -325,7 +332,7 @@ mux-player { width: 100%; height: 100%; }
     margin-top: 10px;
   }
   #archive-section {
-    width: 95%;
+    width: 100%;
   }
   .carousel-slide {
     flex-basis: clamp(240px, 80vw, 360px);
@@ -335,15 +342,23 @@ mux-player { width: 100%; height: 100%; }
     height: 36px;
   }
   #chat {
-    width: 95%;
+    width: 100%;
   }
   #talkjs-container {
     min-height: 400px;
     height: 65vh;
   }
-  #talkjs-container {
-    min-height: 360px;
-  }
+}
+
+@media (max-width: 600px) {
+  #content img { width: min(82%, 360px); margin-bottom: 20px; }
+  .mux-player-container { border-radius: 8px; }
+  .button-row { gap: 12px; width: 100%; }
+  .n9ne-btn { flex: 1 1 44%; max-width: none; }
+  .carousel-header h2 { flex: 1; font-size: 1.1rem; }
+  #chat { padding: 12px; }
+  #talkjs-container { min-height: 320px; height: 58vh; }
+  #archive-carousel { padding-inline: 0; }
 }
 </style>
 
