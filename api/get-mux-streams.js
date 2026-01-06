@@ -91,38 +91,43 @@ export default async function handler(req, res) {
     const readyAssets = assets
       .filter(asset => asset?.status === "ready")
       .filter(asset => asset?.playback_ids?.some(p => p?.policy === "public"))
-      .map(asset => ({
-        ...asset,
-        playback_ids: asset.playback_ids.filter(p => p?.policy === "public"),
-      }));
+      .map(asset => {
+        const publicPlaybackIds = (asset.playback_ids || []).filter(p => p?.policy === "public");
+        const createdRaw = asset.created_at;
+        const createdTimestamp = typeof createdRaw === "number" || /^\d+$/.test(String(createdRaw))
+          ? Number(createdRaw) * 1000
+          : createdRaw;
+        const createdAt = new Date(createdTimestamp);
 
-    const response = readyAssets.map(asset => {
-      const playbackId = asset.playback_ids[0]?.id;
-      const createdAt = new Date(asset.created_at);
-      const title = createdAt instanceof Date && !Number.isNaN(createdAt.valueOf())
-        ? `Stream from ${createdAt.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}`
-        : "Previous Stream";
+        const titleFromMux = asset.passthrough || asset.name;
+        const dateLabel = createdAt instanceof Date && !Number.isNaN(createdAt.valueOf())
+          ? `Stream from ${createdAt.toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}`
+          : null;
 
-      return {
-        mux_asset_id: asset.id,
-        title,
-        playback_id: playbackId,
-        playback_url: playbackId ? `https://stream.mux.com/${playbackId}.m3u8` : null,
-        thumbnail_url: playbackId
-          ? `https://image.mux.com/${playbackId}/thumbnail.jpg?time=2`
-          : null,
-        duration: formatDuration(asset.duration || 0),
-        views: Number.isFinite(Number(asset.view_count)) ? Number(asset.view_count) : 0,
-        created_at:
-          createdAt instanceof Date && !Number.isNaN(createdAt.valueOf())
-            ? createdAt.toISOString()
+        const playbackId = publicPlaybackIds.find(p => p?.id)?.id || null;
+
+        return {
+          mux_asset_id: asset.id,
+          title: titleFromMux || dateLabel || "Previous Stream",
+          playback_id: playbackId,
+          playback_url: playbackId ? `https://stream.mux.com/${playbackId}.m3u8` : null,
+          thumbnail_url: playbackId
+            ? `https://image.mux.com/${playbackId}/thumbnail.jpg?time=2`
             : null,
-      };
-    });
+          duration: formatDuration(asset.duration || 0),
+          views: Number.isFinite(Number(asset.view_count)) ? Number(asset.view_count) : 0,
+          created_at:
+            createdAt instanceof Date && !Number.isNaN(createdAt.valueOf())
+            ? createdAt.toISOString()
+              : null,
+        };
+      });
+
+    const response = readyAssets;
 
     const filteredResponse = response.filter(item => item.playback_id);
 
