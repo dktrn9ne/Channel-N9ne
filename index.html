@@ -720,6 +720,35 @@ async function initSupabaseChat() {
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
   window.supabaseChatClient = supabaseClient;
 
+  async function ensureAuthenticated() {
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        console.warn("Supabase auth session error", error);
+      }
+      if (!data?.session) {
+        if (status) {
+          status.textContent = "Signing in to chat…";
+        }
+        const { error: signInError } = await supabaseClient.auth.signInAnonymously();
+        if (signInError) {
+          console.error("Supabase anonymous sign-in failed", signInError);
+          if (status) {
+            status.textContent = "Chat sign-in failed. Please try again.";
+          }
+          return false;
+        }
+      }
+      return true;
+    } catch (err) {
+      console.error("Supabase auth exception", err);
+      if (status) {
+        status.textContent = "Chat sign-in failed. Please try again.";
+      }
+      return false;
+    }
+  }
+
   async function loadMessages() {
     const { data, error } = await supabaseClient
       .from("messages")
@@ -734,6 +763,11 @@ async function initSupabaseChat() {
     messagesEl.innerHTML = "";
     data.forEach((message) => renderMessage(message, messagesEl));
     if (status) status.textContent = "";
+  }
+
+  const authed = await ensureAuthenticated();
+  if (!authed) {
+    return;
   }
 
   await loadMessages();
@@ -762,6 +796,10 @@ async function initSupabaseChat() {
     input.value = "";
     input.disabled = true;
     try {
+      const ready = await ensureAuthenticated();
+      if (!ready) {
+        return;
+      }
       const { error } = await supabaseClient.from("messages").insert({
         user_id: viewerProfile.id,
         username: viewerProfile.name,
