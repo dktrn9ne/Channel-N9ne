@@ -182,7 +182,7 @@ mux-player { width: 100%; height: 100%; }
   gap: 8px;
   height: 100%;
 }
-#talkjs-container {
+#supabase-chat {
   flex: 1;
   min-height: 480px;
   height: 70vh;
@@ -191,6 +191,66 @@ mux-player { width: 100%; height: 100%; }
   border: 1px solid #222;
   background: rgba(0, 0, 0, 0.4);
   box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.1);
+  border: 1px solid rgba(0, 191, 255, 0.25);
+}
+.chat-meta {
+  font-size: 0.8rem;
+  color: #7fd9ff;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chat-text {
+  margin: 0;
+  color: #f5fcff;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+.chat-form {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(0, 191, 255, 0.2);
+  background: rgba(0, 0, 0, 0.45);
+}
+.chat-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 191, 255, 0.4);
+  background: rgba(5, 15, 25, 0.85);
+  color: #e8f9ff;
+}
+.chat-form button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 191, 255, 0.7);
+  background: rgba(0, 191, 255, 0.2);
+  color: #e8f9ff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.chat-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.35);
 }
 .chat-status {
   margin: 0;
@@ -344,7 +404,7 @@ mux-player { width: 100%; height: 100%; }
   #chat {
     width: 100%;
   }
-  #talkjs-container {
+  #supabase-chat {
     min-height: 400px;
     height: 65vh;
   }
@@ -357,13 +417,13 @@ mux-player { width: 100%; height: 100%; }
   .n9ne-btn { flex: 1 1 44%; max-width: none; }
   .carousel-header h2 { flex: 1; font-size: 1.1rem; }
   #chat { padding: 12px; }
-  #talkjs-container { min-height: 320px; height: 58vh; }
+  #supabase-chat { min-height: 320px; height: 58vh; }
   #archive-carousel { padding-inline: 0; }
 }
 </style>
 
 <script src="https://unpkg.com/@mux/mux-player"></script>
-<script src="https://cdn.talkjs.com/talk.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -413,20 +473,33 @@ mux-player { width: 100%; height: 100%; }
       </section>
     </div>
 
-    <!-- 💬 TalkJS Chat -->
+    <!-- 💬 Supabase Chat -->
     <div id="chat">
       <div id="chat-header">
-        <span>💬 TalkJS Chat</span>
+        <span>💬 Supabase Chat</span>
         <span class="chat-subtitle">Live community</span>
       </div>
       <div id="chat-body">
         <div
-          id="talkjs-container"
-          data-app-id="tN5BYQk3"
+          id="supabase-chat"
+          data-supabase-url=""
+          data-supabase-anon-key=""
           aria-live="polite"
           aria-label="Channel N9NE live chat"
         >
-          <div class="chat-status">Connecting to chat…</div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-status">Connecting to chat…</div>
+          </div>
+          <form class="chat-form" id="chat-form">
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="Say hello..."
+              autocomplete="off"
+              aria-label="Chat message"
+            />
+            <button type="submit">Send</button>
+          </form>
         </div>
         <p id="chat-status" class="chat-status" aria-live="polite"></p>
       </div>
@@ -559,10 +632,10 @@ function setupCarouselControls(){
 }
 setupCarouselControls();
 
-/* TALKJS CHAT */
+/* SUPABASE CHAT */
 function getViewerProfile() {
   try {
-    const cached = localStorage.getItem("talkjsViewerProfile");
+    const cached = localStorage.getItem("supabaseViewerProfile");
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed?.id && parsed?.name) {
@@ -570,93 +643,148 @@ function getViewerProfile() {
       }
     }
   } catch (err) {
-    console.warn("Unable to read TalkJS profile from storage", err);
+    console.warn("Unable to read Supabase profile from storage", err);
   }
 
   const profile = {
     id: `viewer-${Math.random().toString(36).slice(2, 10)}`,
-    name: "Channel N9NE Viewer",
-    photoUrl: "https://demo.talkjs.com/img/ronald.jpg",
-    welcomeMessage: "Ready to chat!",
-    role: "default",
+    name: `Viewer-${Math.random().toString(36).slice(2, 6)}`,
   };
 
   try {
-    localStorage.setItem("talkjsViewerProfile", JSON.stringify(profile));
+    localStorage.setItem("supabaseViewerProfile", JSON.stringify(profile));
   } catch (err) {
-    console.warn("Unable to persist TalkJS profile", err);
+    console.warn("Unable to persist Supabase profile", err);
   }
 
   return profile;
 }
 
-async function initTalkJSChat() {
-  const chatContainer = document.getElementById("talkjs-container");
+function renderMessage(message, messagesEl) {
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("chat-message");
+  const meta = document.createElement("div");
+  meta.classList.add("chat-meta");
+  const author = document.createElement("span");
+  author.textContent = message.username || "Anonymous";
+  const timestamp = document.createElement("span");
+  const created = message.created_at ? new Date(message.created_at) : null;
+  timestamp.textContent = created && !isNaN(created)
+    ? created.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    : "";
+  meta.appendChild(author);
+  meta.appendChild(timestamp);
+  const text = document.createElement("p");
+  text.classList.add("chat-text");
+  text.textContent = message.message || "";
+  wrapper.appendChild(meta);
+  wrapper.appendChild(text);
+  messagesEl.appendChild(wrapper);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+async function initSupabaseChat() {
+  const chatContainer = document.getElementById("supabase-chat");
   const status = document.getElementById("chat-status");
-  if (!chatContainer) return;
+  const messagesEl = document.getElementById("chat-messages");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-input");
+  if (!chatContainer || !messagesEl || !form || !input) return;
 
-  const appId = window.TALKJS_APP_ID || chatContainer.dataset.appId || "";
+  const supabaseUrl = window.SUPABASE_URL || chatContainer.dataset.supabaseUrl || "";
+  const supabaseAnonKey = window.SUPABASE_ANON_KEY || chatContainer.dataset.supabaseAnonKey || "";
 
-  if (!appId || appId === "YOUR_APP_ID") {
-    const message = "Add your TalkJS app ID to enable live chat.";
-    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const message = "Add your Supabase URL + anon key to enable live chat.";
+    messagesEl.innerHTML = `<div class="chat-status">${message}</div>`;
     if (status) {
       status.textContent = message;
     }
     return;
   }
 
-  if (typeof Talk === "undefined") {
+  if (!window.supabase) {
     const message = "Chat failed to load. Please try again.";
-    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
+    messagesEl.innerHTML = `<div class="chat-status">${message}</div>`;
     if (status) {
       status.textContent = message;
     }
     return;
   }
 
-  try {
-    await Talk.ready;
-    const viewerProfile = getViewerProfile();
-    const me = new Talk.User(viewerProfile);
-    const host = new Talk.User({
-      id: "channel-n9ne-host",
-      name: "Channel N9NE",
-      photoUrl: "https://talkjs.com/images/avatar-1.jpg",
-      welcomeMessage: "Welcome to the live chat!",
-      role: "default",
-    });
+  const viewerProfile = getViewerProfile();
+  const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+  window.supabaseChatClient = supabaseClient;
 
-    const session = new Talk.Session({ appId, me });
-    window.talkSession = session;
-
-    const conversation = session.getOrCreateConversation("channel-n9ne-live-chat");
-    conversation.setAttributes({
-      subject: "Channel N9NE Live Chat",
-    });
-    conversation.setParticipant(me);
-    conversation.setParticipant(host);
-
-    const chatbox = session.createChatbox(conversation);
-    chatbox.mount(chatContainer);
-
-    if (status) {
-      status.textContent = "";
+  async function loadMessages() {
+    const { data, error } = await supabaseClient
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(200);
+    if (error) {
+      console.error("Supabase chat load failed", error);
+      messagesEl.innerHTML = '<div class="chat-status">Unable to load chat history.</div>';
+      return;
     }
-  } catch (err) {
-    console.error("TalkJS initialization failed", err);
-    const message = "Chat is unavailable right now.";
-    chatContainer.innerHTML = `<div class="chat-status">${message}</div>`;
-    if (status) {
-      status.textContent = message;
-    }
+    messagesEl.innerHTML = "";
+    data.forEach((message) => renderMessage(message, messagesEl));
+    if (status) status.textContent = "";
   }
+
+  await loadMessages();
+
+  const channel = supabaseClient
+    .channel("public:messages")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      (payload) => {
+        if (payload?.new) {
+          renderMessage(payload.new, messagesEl);
+        }
+      }
+    )
+    .subscribe((channelStatus) => {
+      if (status && channelStatus === "SUBSCRIBED") {
+        status.textContent = "";
+      }
+    });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = "";
+    input.disabled = true;
+    try {
+      const { error } = await supabaseClient.from("messages").insert({
+        user_id: viewerProfile.id,
+        username: viewerProfile.name,
+        message,
+      });
+      if (error) {
+        console.error("Supabase chat send failed", error);
+        if (status) status.textContent = "Unable to send message.";
+      }
+    } catch (err) {
+      console.error("Supabase chat send exception", err);
+      if (status) status.textContent = "Unable to send message.";
+    } finally {
+      input.disabled = false;
+      input.focus();
+    }
+  });
+
+  window.addEventListener("beforeunload", () => {
+    supabaseClient.removeChannel(channel);
+  });
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initTalkJSChat);
+  document.addEventListener("DOMContentLoaded", initSupabaseChat);
 } else {
-  initTalkJSChat();
+  initSupabaseChat();
 }
 
 /* STARS */
