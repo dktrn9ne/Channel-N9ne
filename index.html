@@ -482,8 +482,8 @@ mux-player { width: 100%; height: 100%; }
       <div id="chat-body">
         <div
           id="supabase-chat"
-          data-supabase-url=""
-          data-supabase-anon-key=""
+          data-supabase-url="https://kidmxnxkhyhaehzexatm.supabase.co"
+          data-supabase-anon-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U"
           aria-live="polite"
           aria-label="Channel N9NE live chat"
         >
@@ -692,7 +692,11 @@ async function initSupabaseChat() {
   if (!chatContainer || !messagesEl || !form || !input) return;
 
   const supabaseUrl = window.SUPABASE_URL || chatContainer.dataset.supabaseUrl || "";
-  const supabaseAnonKey = window.SUPABASE_ANON_KEY || chatContainer.dataset.supabaseAnonKey || "";
+  const supabaseAnonKey =
+    window.SUPABASE_ANON_KEY ||
+    window.SUPABASE_KEY ||
+    chatContainer.dataset.supabaseAnonKey ||
+    "";
 
   if (!supabaseUrl || !supabaseAnonKey) {
     const message = "Add your Supabase URL + anon key to enable live chat.";
