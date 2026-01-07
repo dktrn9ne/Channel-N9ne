@@ -59,11 +59,7 @@
     </style>
   </head>
   <body>
-    <div
-      id="supabase-overlay"
-      data-supabase-url="https://kidmxnxkhyhaehzexatm.supabase.co"
-      data-supabase-anon-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U"
-    >
+    <div id="supabase-overlay" data-supabase-url="" data-supabase-anon-key="">
       <div id="overlay-messages">
         <div class="overlay-status">Connecting to chat…</div>
       </div>
@@ -105,11 +101,7 @@
         if (!container || !messagesEl) return;
 
         const supabaseUrl = window.SUPABASE_URL || container.dataset.supabaseUrl || "";
-        const supabaseAnonKey =
-          window.SUPABASE_ANON_KEY ||
-          window.SUPABASE_KEY ||
-          container.dataset.supabaseAnonKey ||
-          "";
+        const supabaseAnonKey = window.SUPABASE_ANON_KEY || container.dataset.supabaseAnonKey || "";
 
         if (!supabaseUrl || !supabaseAnonKey) {
           messagesEl.innerHTML = '<div class="overlay-status">Add your Supabase URL + anon key to enable chat.</div>';
