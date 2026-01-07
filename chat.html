@@ -10,46 +10,148 @@
       document.body.style.margin = "0";
       document.body.style.overflow = "hidden";
     </script>
-    <script src="https://cdn.talkjs.com/talk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       html, body { width: 100%; height: 100%; background: transparent; }
-      #talkjs-container {
+      #supabase-overlay {
         width: 100vw;
         height: 100vh;
         background: transparent;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        padding: 18px;
+        box-sizing: border-box;
       }
-      /* optional: nudge / shrink etc */
+      #overlay-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: min(480px, 90vw);
+        max-height: 90vh;
+        overflow: hidden;
+      }
+      .overlay-message {
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(5, 15, 25, 0.6);
+        border: 1px solid rgba(0, 191, 255, 0.35);
+        color: #f5fcff;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .overlay-meta {
+        font-size: 0.75rem;
+        color: #7fd9ff;
+        margin-bottom: 4px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .overlay-text {
+        margin: 0;
+        font-size: 0.95rem;
+      }
+      .overlay-status {
+        color: #bfefff;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.9rem;
+      }
     </style>
   </head>
   <body>
-    <div id="talkjs-container"></div>
+    <div id="supabase-overlay" data-supabase-url="" data-supabase-anon-key="">
+      <div id="overlay-messages">
+        <div class="overlay-status">Connecting to chat…</div>
+      </div>
+    </div>
 
     <script>
-      // IMPORTANT:
-      // Do NOT put your secret key here.
-      // Use TalkJS "session token" (recommended) or other safe auth method.
-      const TALKJS_APP_ID = "tN5BYQk3";
+      function renderOverlayMessage(message, messagesEl) {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("overlay-message");
 
-      Talk.ready.then(() => {
-        const me = new Talk.User({
-          id: "streamer",
-          name: "Streamer",
-          role: "default"
+        const meta = document.createElement("div");
+        meta.classList.add("overlay-meta");
+        const author = document.createElement("span");
+        author.textContent = message.username || "Anonymous";
+        const timestamp = document.createElement("span");
+        const created = message.created_at ? new Date(message.created_at) : null;
+        timestamp.textContent = created && !isNaN(created)
+          ? created.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+          : "";
+        meta.appendChild(author);
+        meta.appendChild(timestamp);
+
+        const text = document.createElement("p");
+        text.classList.add("overlay-text");
+        text.textContent = message.message || "";
+
+        wrapper.appendChild(meta);
+        wrapper.appendChild(text);
+        messagesEl.appendChild(wrapper);
+        const maxMessages = 6;
+        while (messagesEl.children.length > maxMessages) {
+          messagesEl.removeChild(messagesEl.firstChild);
+        }
+      }
+
+      async function initSupabaseOverlay() {
+        const container = document.getElementById("supabase-overlay");
+        const messagesEl = document.getElementById("overlay-messages");
+        if (!container || !messagesEl) return;
+
+        const supabaseUrl = window.SUPABASE_URL || container.dataset.supabaseUrl || "";
+        const supabaseAnonKey = window.SUPABASE_ANON_KEY || container.dataset.supabaseAnonKey || "";
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          messagesEl.innerHTML = '<div class="overlay-status">Add your Supabase URL + anon key to enable chat.</div>';
+          return;
+        }
+
+        if (!window.supabase) {
+          messagesEl.innerHTML = '<div class="overlay-status">Chat failed to load.</div>';
+          return;
+        }
+
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        const { data, error } = await supabaseClient
+          .from("messages")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(6);
+
+        if (error) {
+          messagesEl.innerHTML = '<div class="overlay-status">Unable to load chat.</div>';
+          return;
+        }
+
+        messagesEl.innerHTML = "";
+        data.reverse().forEach((message) => renderOverlayMessage(message, messagesEl));
+
+        const channel = supabaseClient
+          .channel("public:messages-overlay")
+          .on(
+            "postgres_changes",
+            { event: "INSERT", schema: "public", table: "messages" },
+            (payload) => {
+              if (payload?.new) {
+                renderOverlayMessage(payload.new, messagesEl);
+              }
+            }
+          )
+          .subscribe();
+
+        window.addEventListener("beforeunload", () => {
+          supabaseClient.removeChannel(channel);
         });
+      }
 
-        const session = new Talk.Session({
-          appId: TALKJS_APP_ID,
-          me
-          // If you use session tokens, add: token: "..."
-        });
-
-        const conversation = session.getOrCreateConversation("my-stream-chat");
-        conversation.setParticipant(me);
-
-        // Create a "chatbox" view inside the container
-        const chatbox = session.createChatbox(conversation);
-        chatbox.mount(document.getElementById("talkjs-container"));
-      });
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initSupabaseOverlay);
+      } else {
+        initSupabaseOverlay();
+      }
     </script>
   </body>
 </html>
