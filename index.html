@@ -483,7 +483,7 @@ mux-player { width: 100%; height: 100%; }
         <div
           id="supabase-chat"
           data-supabase-url="https://kidmxnxkhyhaehzexatm.supabase.co"
-          data-supabase-anon-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZG14bnhraHloYWVoemV4YXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTI3NjYsImV4cCI6MjA3NzQ4ODc2Nn0.JyyK2yYLP3WX4QIxnJcH_f4KNuDlaJ-e0ZKb07uJS_U"
+          data-supabase-anon-key="sb_publishable_X5T2aXctUL2u0N002nwiLg_xIIjjPUp"
           aria-live="polite"
           aria-label="Channel N9NE live chat"
         >
@@ -695,6 +695,7 @@ async function initSupabaseChat() {
   const supabaseAnonKey =
     window.SUPABASE_ANON_KEY ||
     window.SUPABASE_KEY ||
+    window.SUPABASE_PUBLISHABLE_KEY ||
     chatContainer.dataset.supabaseAnonKey ||
     "";
 
@@ -720,6 +721,35 @@ async function initSupabaseChat() {
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
   window.supabaseChatClient = supabaseClient;
 
+  async function ensureAuthenticated() {
+    try {
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        console.warn("Supabase auth session error", error);
+      }
+      if (!data?.session) {
+        if (status) {
+          status.textContent = "Signing in to chat…";
+        }
+        const { error: signInError } = await supabaseClient.auth.signInAnonymously();
+        if (signInError) {
+          console.error("Supabase anonymous sign-in failed", signInError);
+          if (status) {
+            status.textContent = "Chat sign-in failed. Please try again.";
+          }
+          return false;
+        }
+      }
+      return true;
+    } catch (err) {
+      console.error("Supabase auth exception", err);
+      if (status) {
+        status.textContent = "Chat sign-in failed. Please try again.";
+      }
+      return false;
+    }
+  }
+
   async function loadMessages() {
     const { data, error } = await supabaseClient
       .from("messages")
@@ -734,6 +764,11 @@ async function initSupabaseChat() {
     messagesEl.innerHTML = "";
     data.forEach((message) => renderMessage(message, messagesEl));
     if (status) status.textContent = "";
+  }
+
+  const authed = await ensureAuthenticated();
+  if (!authed) {
+    return;
   }
 
   await loadMessages();
@@ -762,6 +797,10 @@ async function initSupabaseChat() {
     input.value = "";
     input.disabled = true;
     try {
+      const ready = await ensureAuthenticated();
+      if (!ready) {
+        return;
+      }
       const { error } = await supabaseClient.from("messages").insert({
         user_id: viewerProfile.id,
         username: viewerProfile.name,
