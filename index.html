@@ -152,29 +152,75 @@ mux-player { width: 100%; height: 100%; }
   flex: 1.5;
   display: flex;
   flex-direction: column;
-  border: 1px solid #333;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(5, 20, 32, 0.85), rgba(0, 5, 10, 0.6));
+  padding: 16px;
   max-height: 720px;
   width: 100%;
   box-sizing: border-box;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 191, 255, 0.2);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 191, 255, 0.05);
 }
-#chat-header {
+.chat-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+.chat-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 191, 255, 0.2);
+}
+.chat-title {
+  display: flex;
   align-items: center;
-  font-weight: bold;
-  border-bottom: 1px solid #333;
-  padding-bottom: 6px;
-  margin-bottom: 10px;
-  color: #00bfff;
+  gap: 10px;
+}
+.chat-title-icon {
+  display: inline-flex;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 191, 255, 0.18);
+  color: #00e5ff;
+  font-size: 1.1rem;
+}
+.chat-title h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #e5f7ff;
+  letter-spacing: 0.02em;
 }
 .chat-subtitle {
   font-weight: normal;
   font-size: 0.9rem;
   color: #7fd9ff;
+  margin: 2px 0 0;
+}
+.chat-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(0, 191, 255, 0.15);
+  color: #97e7ff;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
+.chat-status-pill[data-state="offline"] {
+  background: rgba(255, 88, 88, 0.18);
+  color: #ffd0d0;
+  border-color: rgba(255, 88, 88, 0.35);
 }
 #chat-body {
   display: flex;
@@ -186,34 +232,40 @@ mux-player { width: 100%; height: 100%; }
   flex: 1;
   min-height: 480px;
   height: 70vh;
-  border-radius: 10px;
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #222;
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  background: rgba(5, 12, 18, 0.72);
+  box-shadow: inset 0 0 18px rgba(0, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
 }
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .chat-message {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(0, 191, 255, 0.1);
-  border: 1px solid rgba(0, 191, 255, 0.25);
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 191, 255, 0.08);
+  border: 1px solid rgba(0, 191, 255, 0.2);
+  max-width: 85%;
+}
+.chat-message.is-self {
+  margin-left: auto;
+  background: rgba(0, 255, 191, 0.12);
+  border-color: rgba(0, 255, 191, 0.3);
 }
 .chat-meta {
   font-size: 0.8rem;
-  color: #7fd9ff;
+  color: #9ee7ff;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -224,12 +276,31 @@ mux-player { width: 100%; height: 100%; }
   font-size: 0.95rem;
   line-height: 1.3;
 }
+.chat-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid rgba(0, 191, 255, 0.2);
+  background: rgba(0, 6, 12, 0.65);
+}
+.chat-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #7fd9ff;
+}
+.chat-identity-label {
+  opacity: 0.7;
+}
+.chat-identity-name {
+  font-weight: 600;
+  color: #d2f5ff;
+}
 .chat-form {
   display: flex;
   gap: 10px;
-  padding: 10px 12px 12px;
-  border-top: 1px solid rgba(0, 191, 255, 0.2);
-  background: rgba(0, 0, 0, 0.45);
 }
 .chat-form input {
   flex: 1;
@@ -243,20 +314,25 @@ mux-player { width: 100%; height: 100%; }
   padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid rgba(0, 191, 255, 0.7);
-  background: rgba(0, 191, 255, 0.2);
+  background: linear-gradient(135deg, rgba(0, 191, 255, 0.3), rgba(0, 191, 255, 0.12));
   color: #e8f9ff;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: 600;
 }
 .chat-form button:hover {
   transform: translateY(-1px);
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.35);
 }
-.chat-status {
+.chat-status,
+.chat-hint {
   margin: 0;
-  padding: 8px 10px;
   color: #bfefff;
   font-size: 0.95rem;
+}
+.chat-hint {
+  font-size: 0.85rem;
+  color: rgba(191, 239, 255, 0.75);
 }
 
 /* 🎥 Previous Streams */
@@ -475,33 +551,47 @@ mux-player { width: 100%; height: 100%; }
 
     <!-- 💬 Supabase Chat -->
     <div id="chat">
-      <div id="chat-header">
-        <span>💬 Supabase Chat</span>
-        <span class="chat-subtitle">Live community</span>
-      </div>
-      <div id="chat-body">
-        <div
-          id="supabase-chat"
-          data-supabase-url="https://kidmxnxkhyhaehzexatm.supabase.co"
-          data-supabase-anon-key="sb_publishable_X5T2aXctUL2u0N002nwiLg_xIIjjPUp"
-          aria-live="polite"
-          aria-label="Channel N9NE live chat"
-        >
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-status">Connecting to chat…</div>
+      <div class="chat-shell">
+        <header class="chat-header">
+          <div class="chat-title">
+            <span class="chat-title-icon">💬</span>
+            <div>
+              <h2>Supabase Chat</h2>
+              <p class="chat-subtitle">Live conversation with Channel N9NE</p>
+            </div>
           </div>
-          <form class="chat-form" id="chat-form">
-            <input
-              type="text"
-              id="chat-input"
-              placeholder="Say hello..."
-              autocomplete="off"
-              aria-label="Chat message"
-            />
-            <button type="submit">Send</button>
-          </form>
+          <div class="chat-status-pill" id="chat-connection" data-state="connecting">Connecting</div>
+        </header>
+        <div id="chat-body">
+          <div
+            id="supabase-chat"
+            data-supabase-url="https://kidmxnxkhyhaehzexatm.supabase.co"
+            data-supabase-anon-key="sb_publishable_X5T2aXctUL2u0N002nwiLg_xIIjjPUp"
+            aria-live="polite"
+            aria-label="Channel N9NE live chat"
+          >
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-status">Connecting to chat…</div>
+            </div>
+            <div class="chat-composer">
+              <div class="chat-identity" id="chat-identity">
+                <span class="chat-identity-label">You are</span>
+                <span class="chat-identity-name" id="chat-identity-name">Viewer</span>
+              </div>
+              <form class="chat-form" id="chat-form">
+                <input
+                  type="text"
+                  id="chat-input"
+                  placeholder="Share something with the community..."
+                  autocomplete="off"
+                  aria-label="Chat message"
+                />
+                <button type="submit">Send</button>
+              </form>
+              <p id="chat-status" class="chat-hint" aria-live="polite"></p>
+            </div>
+          </div>
         </div>
-        <p id="chat-status" class="chat-status" aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -633,6 +723,8 @@ function setupCarouselControls(){
 setupCarouselControls();
 
 /* SUPABASE CHAT */
+let currentViewerId = null;
+
 function getViewerProfile() {
   try {
     const cached = localStorage.getItem("supabaseViewerProfile");
@@ -663,6 +755,9 @@ function getViewerProfile() {
 function renderMessage(message, messagesEl) {
   const wrapper = document.createElement("div");
   wrapper.classList.add("chat-message");
+  if (currentViewerId && message.user_id === currentViewerId) {
+    wrapper.classList.add("is-self");
+  }
   const meta = document.createElement("div");
   meta.classList.add("chat-meta");
   const author = document.createElement("span");
@@ -686,9 +781,11 @@ function renderMessage(message, messagesEl) {
 async function initSupabaseChat() {
   const chatContainer = document.getElementById("supabase-chat");
   const status = document.getElementById("chat-status");
+  const connectionStatus = document.getElementById("chat-connection");
   const messagesEl = document.getElementById("chat-messages");
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
+  const identityName = document.getElementById("chat-identity-name");
   if (!chatContainer || !messagesEl || !form || !input) return;
 
   const supabaseUrl = window.SUPABASE_URL || chatContainer.dataset.supabaseUrl || "";
@@ -705,6 +802,10 @@ async function initSupabaseChat() {
     if (status) {
       status.textContent = message;
     }
+    if (connectionStatus) {
+      connectionStatus.textContent = "Offline";
+      connectionStatus.dataset.state = "offline";
+    }
     return;
   }
 
@@ -714,10 +815,18 @@ async function initSupabaseChat() {
     if (status) {
       status.textContent = message;
     }
+    if (connectionStatus) {
+      connectionStatus.textContent = "Offline";
+      connectionStatus.dataset.state = "offline";
+    }
     return;
   }
 
   const viewerProfile = getViewerProfile();
+  currentViewerId = viewerProfile.id;
+  if (identityName) {
+    identityName.textContent = viewerProfile.name;
+  }
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
   window.supabaseChatClient = supabaseClient;
 
@@ -731,11 +840,19 @@ async function initSupabaseChat() {
         if (status) {
           status.textContent = "Signing in to chat…";
         }
+        if (connectionStatus) {
+          connectionStatus.textContent = "Signing in";
+          connectionStatus.dataset.state = "connecting";
+        }
         const { error: signInError } = await supabaseClient.auth.signInAnonymously();
         if (signInError) {
           console.error("Supabase anonymous sign-in failed", signInError);
           if (status) {
             status.textContent = "Chat sign-in failed. Please try again.";
+          }
+          if (connectionStatus) {
+            connectionStatus.textContent = "Offline";
+            connectionStatus.dataset.state = "offline";
           }
           return false;
         }
@@ -745,6 +862,10 @@ async function initSupabaseChat() {
       console.error("Supabase auth exception", err);
       if (status) {
         status.textContent = "Chat sign-in failed. Please try again.";
+      }
+      if (connectionStatus) {
+        connectionStatus.textContent = "Offline";
+        connectionStatus.dataset.state = "offline";
       }
       return false;
     }
@@ -759,11 +880,23 @@ async function initSupabaseChat() {
     if (error) {
       console.error("Supabase chat load failed", error);
       messagesEl.innerHTML = '<div class="chat-status">Unable to load chat history.</div>';
+      if (connectionStatus) {
+        connectionStatus.textContent = "Offline";
+        connectionStatus.dataset.state = "offline";
+      }
       return;
     }
     messagesEl.innerHTML = "";
-    data.forEach((message) => renderMessage(message, messagesEl));
+    if (data.length === 0) {
+      messagesEl.innerHTML = '<div class="chat-status">Be the first to say hello.</div>';
+    } else {
+      data.forEach((message) => renderMessage(message, messagesEl));
+    }
     if (status) status.textContent = "";
+    if (connectionStatus) {
+      connectionStatus.textContent = "Live";
+      connectionStatus.dataset.state = "live";
+    }
   }
 
   const authed = await ensureAuthenticated();
@@ -780,6 +913,9 @@ async function initSupabaseChat() {
       { event: "INSERT", schema: "public", table: "messages" },
       (payload) => {
         if (payload?.new) {
+          if (messagesEl.querySelector(".chat-status")) {
+            messagesEl.innerHTML = "";
+          }
           renderMessage(payload.new, messagesEl);
         }
       }
@@ -787,6 +923,10 @@ async function initSupabaseChat() {
     .subscribe((channelStatus) => {
       if (status && channelStatus === "SUBSCRIBED") {
         status.textContent = "";
+      }
+      if (connectionStatus && channelStatus === "SUBSCRIBED") {
+        connectionStatus.textContent = "Live";
+        connectionStatus.dataset.state = "live";
       }
     });
 
@@ -809,10 +949,18 @@ async function initSupabaseChat() {
       if (error) {
         console.error("Supabase chat send failed", error);
         if (status) status.textContent = "Unable to send message.";
+        if (connectionStatus) {
+          connectionStatus.textContent = "Offline";
+          connectionStatus.dataset.state = "offline";
+        }
       }
     } catch (err) {
       console.error("Supabase chat send exception", err);
       if (status) status.textContent = "Unable to send message.";
+      if (connectionStatus) {
+        connectionStatus.textContent = "Offline";
+        connectionStatus.dataset.state = "offline";
+      }
     } finally {
       input.disabled = false;
       input.focus();
