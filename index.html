@@ -243,39 +243,56 @@ mux-player { width: 100%; height: 100%; }
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 14px 14px 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
+
+/* Twitch-ish: compact lines instead of big bubbles */
 .chat-message {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(0, 191, 255, 0.08);
-  border: 1px solid rgba(0, 191, 255, 0.2);
-  max-width: 85%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.05);
+  border: 1px solid rgba(0, 191, 255, 0.12);
 }
 .chat-message.is-self {
-  margin-left: auto;
-  background: rgba(0, 255, 191, 0.12);
-  border-color: rgba(0, 255, 191, 0.3);
+  background: rgba(0, 255, 191, 0.08);
+  border-color: rgba(0, 255, 191, 0.18);
 }
+
 .chat-meta {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #9ee7ff;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
 }
+
+.chat-username {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.chat-timestamp {
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
 .chat-text {
   margin: 0;
   color: #f5fcff;
   font-size: 0.95rem;
-  line-height: 1.3;
+  line-height: 1.25;
+  word-break: break-word;
+  flex: 1;
 }
+
 .chat-composer {
   display: flex;
   flex-direction: column;
@@ -284,20 +301,36 @@ mux-player { width: 100%; height: 100%; }
   border-top: 1px solid rgba(0, 191, 255, 0.2);
   background: rgba(0, 6, 12, 0.65);
 }
+
 .chat-identity {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   font-size: 0.82rem;
   color: #7fd9ff;
 }
-.chat-identity-label {
-  opacity: 0.7;
+.chat-identity-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
+.chat-identity-label { opacity: 0.7; }
 .chat-identity-name {
-  font-weight: 600;
+  font-weight: 700;
   color: #d2f5ff;
 }
+
+.chat-identity button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 191, 255, 0.5);
+  background: rgba(0, 191, 255, 0.12);
+  color: #d2f5ff;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
 .chat-form {
   display: flex;
   gap: 10px;
@@ -305,20 +338,20 @@ mux-player { width: 100%; height: 100%; }
 .chat-form input {
   flex: 1;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid rgba(0, 191, 255, 0.4);
   background: rgba(5, 15, 25, 0.85);
   color: #e8f9ff;
 }
 .chat-form button {
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid rgba(0, 191, 255, 0.7);
   background: linear-gradient(135deg, rgba(0, 191, 255, 0.3), rgba(0, 191, 255, 0.12));
   color: #e8f9ff;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  font-weight: 600;
+  font-weight: 700;
 }
 .chat-form button:hover {
   transform: translateY(-1px);
@@ -334,6 +367,8 @@ mux-player { width: 100%; height: 100%; }
   font-size: 0.85rem;
   color: rgba(191, 239, 255, 0.75);
 }
+
+.chat-hint strong { color: #e8f9ff; }
 
 /* 🎥 Previous Streams */
 #archive-section {
@@ -593,8 +628,11 @@ mux-player { width: 100%; height: 100%; }
             </div>
             <div class="chat-composer">
               <div class="chat-identity" id="chat-identity">
-                <span class="chat-identity-label">You are</span>
-                <span class="chat-identity-name" id="chat-identity-name">Viewer</span>
+                <div class="chat-identity-left">
+                  <span class="chat-identity-label">You are</span>
+                  <span class="chat-identity-name" id="chat-identity-name">Viewer</span>
+                </div>
+                <button type="button" id="chat-change-name">Change name</button>
               </div>
               <form class="chat-form" id="chat-form">
                 <input
@@ -743,13 +781,21 @@ setupCarouselControls();
 /* SUPABASE CHAT */
 let currentViewerId = null;
 
+function sanitizeUsername(name) {
+  return String(name || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z0-9 _\-\.]/g, "")
+    .slice(0, 24);
+}
+
 function getViewerProfile() {
   try {
     const cached = localStorage.getItem("supabaseViewerProfile");
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed?.id && parsed?.name) {
-        return parsed;
+        return { ...parsed, name: sanitizeUsername(parsed.name) || parsed.name };
       }
     }
   } catch (err) {
@@ -770,30 +816,68 @@ function getViewerProfile() {
   return profile;
 }
 
+function setViewerName(nextName) {
+  const safe = sanitizeUsername(nextName);
+  if (!safe) return null;
+  const profile = getViewerProfile();
+  const updated = { ...profile, name: safe };
+  try {
+    localStorage.setItem("supabaseViewerProfile", JSON.stringify(updated));
+  } catch (err) {
+    console.warn("Unable to persist Supabase profile", err);
+  }
+  return updated;
+}
+
+function colorFromString(input) {
+  let hash = 0;
+  const str = String(input || "");
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 90%, 72%)`;
+}
+
 function renderMessage(message, messagesEl) {
   const wrapper = document.createElement("div");
   wrapper.classList.add("chat-message");
   if (currentViewerId && message.user_id === currentViewerId) {
     wrapper.classList.add("is-self");
   }
-  const meta = document.createElement("div");
+
+  const meta = document.createElement("span");
   meta.classList.add("chat-meta");
+
   const author = document.createElement("span");
+  author.classList.add("chat-username");
   author.textContent = message.username || "Anonymous";
+  author.style.color = colorFromString(author.textContent);
+
   const timestamp = document.createElement("span");
+  timestamp.classList.add("chat-timestamp");
   const created = message.created_at ? new Date(message.created_at) : null;
   timestamp.textContent = created && !isNaN(created)
     ? created.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
     : "";
+
   meta.appendChild(author);
   meta.appendChild(timestamp);
+
   const text = document.createElement("p");
   text.classList.add("chat-text");
   text.textContent = message.message || "";
+
   wrapper.appendChild(meta);
   wrapper.appendChild(text);
   messagesEl.appendChild(wrapper);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  // Only autoscroll if user is already near the bottom (Twitch-like behavior)
+  const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+  if (nearBottom) {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
 }
 
 async function initSupabaseChat() {
@@ -804,6 +888,7 @@ async function initSupabaseChat() {
   const form = document.getElementById("chat-form");
   const input = document.getElementById("chat-input");
   const identityName = document.getElementById("chat-identity-name");
+  const changeNameBtn = document.getElementById("chat-change-name");
   if (!chatContainer || !messagesEl || !form || !input) return;
 
   const supabaseUrl = window.SUPABASE_URL || chatContainer.dataset.supabaseUrl || "";
@@ -843,10 +928,22 @@ async function initSupabaseChat() {
     return;
   }
 
-  const viewerProfile = getViewerProfile();
+  let viewerProfile = getViewerProfile();
   currentViewerId = viewerProfile.id;
   if (identityName) {
     identityName.textContent = viewerProfile.name;
+  }
+
+  if (changeNameBtn) {
+    changeNameBtn.addEventListener("click", () => {
+      const next = window.prompt("Choose a chat name (max 24 chars):", viewerProfile.name);
+      if (next === null) return;
+      const updated = setViewerName(next);
+      if (updated) {
+        viewerProfile = updated;
+        if (identityName) identityName.textContent = viewerProfile.name;
+      }
+    });
   }
   const supabaseClient = useProxy
     ? null
@@ -1028,10 +1125,21 @@ async function initSupabaseChat() {
       });
   }
 
+  let lastSendAt = 0;
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const message = input.value.trim();
     if (!message) return;
+
+    // Basic client-side anti-spam: 1 message per second
+    const now = Date.now();
+    if (now - lastSendAt < 1000) {
+      if (status) status.textContent = "Slow down — 1 msg/sec.";
+      return;
+    }
+    lastSendAt = now;
+
     input.value = "";
     input.disabled = true;
     try {
