@@ -449,6 +449,11 @@ mux-player { width: 100%; height: 100%; }
 }
 
 /* 📱 MOBILE OPTIMIZATION */
+@media (prefers-reduced-motion: reduce) {
+  .star-layer, .star { animation: none !important; }
+  #archive-carousel { scroll-behavior: auto; }
+}
+
 @media (max-width: 900px) {
   #content { padding: 3vh var(--content-gutter) 80px var(--content-gutter); }
   .stream-wrapper {
@@ -498,9 +503,20 @@ mux-player { width: 100%; height: 100%; }
 }
 </style>
 
+<!-- Performance: DNS/TLS warmup for third-party origins -->
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+<link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
+<link rel="preconnect" href="https://kidmxnxkhyhaehzexatm.supabase.co" crossorigin>
+<link rel="preconnect" href="https://api.mux.com" crossorigin>
+<link rel="preconnect" href="https://image.mux.com" crossorigin>
+<link rel="preconnect" href="https://player.mux.com" crossorigin>
+
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5674785666719328" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@mux/mux-player"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Defer non-critical libraries to avoid blocking first paint -->
+<script defer src="https://unpkg.com/@mux/mux-player"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -883,14 +899,26 @@ async function initSupabaseChat() {
     }
   }
 
-  async function loadMessages() {
+  let lastSeenCreatedAt = null;
+  const seenFingerprints = new Set();
+
+  function fingerprintMessage(m) {
+    return [m.created_at || "", m.user_id || "", m.username || "", m.message || ""].join("|");
+  }
+
+  async function loadMessages({ incremental = false } = {}) {
     let data = null;
     let loadError = null;
     try {
       if (useProxy) {
-        const response = await fetch(supabaseProxyUrl, {
+        const url = new URL(supabaseProxyUrl, window.location.origin);
+        if (incremental && lastSeenCreatedAt) {
+          url.searchParams.set("since", lastSeenCreatedAt);
+        }
+        const response = await fetch(url.toString(), {
           method: "GET",
           headers: { Accept: "application/json" },
+          cache: "no-store",
         });
         if (!response.ok) {
           throw new Error(`Proxy request failed: ${response.status}`);
@@ -921,12 +949,30 @@ async function initSupabaseChat() {
       }
       return;
     }
-    messagesEl.innerHTML = "";
-    if (data.length === 0) {
-      messagesEl.innerHTML = '<div class="chat-status">Be the first to say hello.</div>';
-    } else {
-      data.forEach((message) => renderMessage(message, messagesEl));
+
+    // First load replaces contents; incremental load appends only new messages.
+    if (!incremental) {
+      messagesEl.innerHTML = "";
+      seenFingerprints.clear();
+      if (data.length === 0) {
+        messagesEl.innerHTML = '<div class="chat-status">Be the first to say hello.</div>';
+      }
     }
+
+    if (Array.isArray(data) && data.length) {
+      data.forEach((message) => {
+        const fp = fingerprintMessage(message);
+        if (seenFingerprints.has(fp)) return;
+        seenFingerprints.add(fp);
+        renderMessage(message, messagesEl);
+      });
+
+      const newest = data[data.length - 1];
+      if (newest?.created_at) {
+        lastSeenCreatedAt = newest.created_at;
+      }
+    }
+
     if (status) status.textContent = "";
     if (connectionStatus) {
       connectionStatus.textContent = "Live";
@@ -939,12 +985,23 @@ async function initSupabaseChat() {
     return;
   }
 
-  await loadMessages();
+  await loadMessages({ incremental: false });
 
   let pollIntervalId = null;
   let channel = null;
   if (useProxy) {
-    pollIntervalId = window.setInterval(loadMessages, 8000);
+    const poll = () => {
+      // Avoid background-tab polling (reduces server + battery load)
+      if (document.visibilityState !== "visible") return;
+      loadMessages({ incremental: true });
+    };
+    pollIntervalId = window.setInterval(poll, 10000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        // quick refresh when returning to the tab
+        loadMessages({ incremental: true });
+      }
+    });
   } else {
     channel = supabaseClient
       .channel("public:messages")
@@ -1097,9 +1154,15 @@ starStyle.innerHTML=`
 }
 `;
 document.head.appendChild(starStyle);
-createStars("layer1",140,[1,2],[80,160],[90,140],[4,7]);
-createStars("layer2",95,[2,3],[140,240],[120,180],[5,8]);
-createStars("layer3",65,[3,4],[200,320],[160,220],[6,9]);
+const isMobile = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (!reduceMotion) {
+  // Slightly lighter starfield on mobile to keep scrolling smooth.
+  createStars("layer1", isMobile ? 90 : 140, [1,2], [80,160], [90,140], [4,7]);
+  createStars("layer2", isMobile ? 60 : 95, [2,3], [140,240], [120,180], [5,8]);
+  createStars("layer3", isMobile ? 40 : 65, [3,4], [200,320], [160,220], [6,9]);
+}
 document.addEventListener("mousemove",(e)=>{
   const x=e.clientX/window.innerWidth-0.5;
   const y=e.clientY/window.innerHeight-0.5;
