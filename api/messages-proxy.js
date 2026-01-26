@@ -36,8 +36,14 @@ async function readJson(req) {
   });
 }
 
-function sendJson(res, status, payload) {
-  res.writeHead(status, { ...DEFAULT_HEADERS, "Content-Type": "application/json" });
+function sendJson(res, status, payload, extraHeaders = {}) {
+  res.writeHead(status, {
+    ...DEFAULT_HEADERS,
+    "Content-Type": "application/json",
+    // Chat data is realtime; avoid caching at the edge.
+    "Cache-Control": "no-store",
+    ...extraHeaders,
+  });
   res.end(JSON.stringify(payload));
 }
 
@@ -64,7 +70,19 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === "GET") {
-      const url = `${baseUrl}?select=*&order=created_at.asc&limit=200`;
+      const since = (req.query && req.query.since) || null;
+      const params = new URLSearchParams({
+        select: "*",
+        order: "created_at.asc",
+        limit: "200",
+      });
+
+      // Optional incremental fetch
+      if (since && typeof since === "string") {
+        params.set("created_at", `gt.${since}`);
+      }
+
+      const url = `${baseUrl}?${params.toString()}`;
       const response = await fetch(url, { headers, method: "GET" });
       const payload = await response.json();
       if (!response.ok) {
