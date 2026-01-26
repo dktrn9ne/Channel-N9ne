@@ -75,9 +75,146 @@ body { min-height: 100vh; position: relative; }
   box-sizing: border-box;
 }
 #content img {
-  width: min(80%, 520px);
+  width: min(78%, 480px);
   height: auto;
-  margin-bottom: 30px;
+  margin-bottom: 18px;
+}
+
+/* HERO */
+.hero {
+  width: 100%;
+  text-align: center;
+  margin: 0 auto 18px auto;
+}
+.hero h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 2.6vw, 2.35rem);
+  letter-spacing: 0.01em;
+  color: #eafaff;
+}
+.hero p {
+  margin: 10px auto 0 auto;
+  max-width: 70ch;
+  font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+  line-height: 1.45;
+  color: rgba(191, 239, 255, 0.86);
+}
+.hero-cta-row {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  border: 1px solid rgba(0, 191, 255, 0.55);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.btn-primary {
+  color: #071018;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.95), rgba(0, 191, 255, 0.78));
+  box-shadow: 0 12px 26px rgba(0, 255, 255, 0.16);
+}
+.btn-secondary {
+  color: #dff7ff;
+  background: rgba(0, 191, 255, 0.10);
+}
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(0, 255, 255, 0.22);
+}
+
+/* ACTIONS */
+.actions {
+  width: 100%;
+  margin: 6px auto 6px auto;
+}
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 16px);
+  width: 100%;
+}
+.action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(5, 20, 32, 0.78), rgba(0, 5, 10, 0.52));
+  border: 1px solid rgba(0, 191, 255, 0.18);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+.action-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 255, 255, 0.4);
+}
+.action-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.action-title {
+  margin: 0;
+  font-size: 1rem;
+  color: #eafaff;
+  letter-spacing: 0.02em;
+}
+.action-tag {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 191, 255, 0.25);
+  background: rgba(0, 191, 255, 0.10);
+  color: rgba(210, 245, 255, 0.92);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.action-desc {
+  margin: 0;
+  color: rgba(191, 239, 255, 0.82);
+  line-height: 1.35;
+  font-size: 0.95rem;
+}
+.action-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 191, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(232, 249, 255, 0.92);
+  text-decoration: none;
+  font-weight: 700;
+}
+.action-pill:hover {
+  border-color: rgba(0, 255, 255, 0.45);
+}
+
+@media (max-width: 900px) {
+  .actions-grid { grid-template-columns: 1fr; }
 }
 
 /* STREAM + CHAT */
@@ -563,7 +700,56 @@ mux-player { width: 100%; height: 100%; }
 <div id="content">
   <img src="channel9.png" alt="Channel N9NE Logo"/>
 
-  <div class="stream-wrapper">
+  <section class="hero" aria-label="Channel N9NE intro">
+    <h1>Channel N9NE Live</h1>
+    <p>
+      Watch live streams, jump into the community chat, and plug into the ecosystem.
+      Built in Austin by <strong>DKTR N9NE</strong>.
+    </p>
+    <div class="hero-cta-row">
+      <a class="btn-primary" href="#stream" aria-label="Watch live">▶ Watch Live</a>
+      <a class="btn-secondary" href="#actions" aria-label="Subscribe or support">★ Subscribe / Support</a>
+    </div>
+  </section>
+
+  <section class="actions" id="actions" aria-label="Actions">
+    <div class="actions-grid">
+      <a class="action-card" href="#stream" aria-label="Jump to the live stream">
+        <div class="action-top">
+          <h3 class="action-title">Watch live</h3>
+          <span class="action-tag">Now</span>
+        </div>
+        <p class="action-desc">Stream + chat in one place. Clean, fast, and mobile-friendly.</p>
+      </a>
+
+      <div class="action-card" role="group" aria-label="Subscribe">
+        <div class="action-top">
+          <h3 class="action-title">Subscribe</h3>
+          <span class="action-tag">Updates</span>
+        </div>
+        <p class="action-desc">Get updates via email/SMS and unlock the paid subscription option.</p>
+        <div class="action-links">
+          <a class="action-pill" href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" rel="noreferrer" aria-label="Paid subscription via Stripe">Paid (Stripe)</a>
+          <!-- Replace this placeholder with your email/SMS signup link (ConvertKit/Mailchimp/etc.) -->
+          <a class="action-pill" href="mailto:mrthomaslmg@gmail.com?subject=Channel%20N9NE%20List%20Signup" aria-label="Email list signup">Email/SMS list (link)</a>
+        </div>
+      </div>
+
+      <div class="action-card" role="group" aria-label="Support">
+        <div class="action-top">
+          <h3 class="action-title">Support</h3>
+          <span class="action-tag">Fuel</span>
+        </div>
+        <p class="action-desc">If you like what’s being built, here’s the simplest way to support.</p>
+        <div class="action-links">
+          <a class="action-pill" href="https://www.venmo.com/u/channeln9ne" target="_blank" rel="noreferrer">Venmo</a>
+          <a class="action-pill" href="https://www.amazon.com/hz/wishlist/ls/3MJBNQEQN9A64?ref_=wl_share" target="_blank" rel="noreferrer">Amazon wishlist</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stream-wrapper" id="stream">
     <div class="stream-column">
       <div class="mux-player-container">
         <mux-player
@@ -575,17 +761,7 @@ mux-player { width: 100%; height: 100%; }
         </mux-player>
       </div>
 
-      <div class="button-row">
-        <a href="https://www.amazon.com/hz/wishlist/ls/3MJBNQEQN9A64?ref_=wl_share" target="_blank" class="n9ne-btn" aria-label="Amazon Wishlist">
-          <img src="amazon.svg" alt="Amazon Wishlist" class="live" />
-        </a>
-        <a href="https://www.venmo.com/u/channeln9ne" target="_blank" class="n9ne-btn">
-          <img src="venmo.png" alt="Venmo" class="live" />
-        </a>
-        <a href="https://buy.stripe.com/8x2aEYbfL7nqeesdAFefC01" target="_blank" class="n9ne-btn">
-          <img src="sub.png" alt="Subscribe" class="live" />
-        </a>
-      </div>
+      <!-- Legacy image buttons removed (replaced by Actions section above) -->
 
       <section id="archive-section">
         <div class="carousel-header">
