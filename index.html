@@ -522,49 +522,17 @@ html, body {
 </header>
 
 <!-- ══ HERO ══ -->
-<section class="hero a2">
-  <canvas id="heroCvs"></canvas>
+<section class="hero a2" style="display:block;min-height:unset;background:var(--black);">
   <div class="hero-stripe-bar"></div>
-
-  <div class="hero-content">
-    <div class="hero-left">
-      <div class="hero-station a3">DKTR N9NE · AUSTIN / TOKYO · EST. 2020</div>
-
-      <h1 class="hero-h1 a3">
-        <span class="ch">CH.</span><span class="nine">9</span><br>
-        <span style="font-size:clamp(38px,4.5vw,60px);letter-spacing:0.04em;color:var(--white)">Direct·to·Fan</span>
-      </h1>
-
-      <p class="hero-tagline a4">
-        8 projects on Untitled.stream. Live sessions on Mux. Fan tiers on Stripe.<br>
-        No algorithm. No platform tax. Just the music.
-      </p>
-
-      <div class="hero-btns a4">
-        <button class="btn-primary">Join Free</button>
-        <button class="btn-secondary">Browse Catalog</button>
-      </div>
-    </div>
-
-    <div class="hero-stats a5">
-      <div class="hstat">
-        <div class="hstat-val blue">2.4K</div>
-        <div class="hstat-label">FANS</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val">8</div>
-        <div class="hstat-label">PROJECTS</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val">$3.2K</div>
-        <div class="hstat-label">REV MTD</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val blue">247</div>
-        <div class="hstat-label">WATCHING</div>
-      </div>
-    </div>
+  <div style="width:100%;aspect-ratio:16/7;position:relative;background:#000;">
+    <iframe
+      src="https://player.mux.com/Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
+      style="position:absolute;inset:0;width:100%;height:100%;border:none;"
+      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+      allowfullscreen
+    ></iframe>
   </div>
+  <div class="hero-stripe-bar" style="top:unset;bottom:0;"></div>
 </section>
 
 <div class="stripe-divider"></div>
@@ -698,26 +666,37 @@ html, body {
   <!-- SIDEBAR -->
   <aside class="side-col">
 
-    <!-- STREAM -->
-    <div class="spanel">
-      <div class="panel-label">
-        <span>LIVE · MUX STREAM</span>
-        <span class="panel-live"><div class="dot"></div>ON AIR</span>
-      </div>
-      <div class="sframe" style="aspect-ratio:16/9;position:relative;overflow:hidden;">
-        <iframe
-          src="https://player.mux.com/Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-          style="position:absolute;inset:0;width:100%;height:100%;border:none;"
-          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-          allowfullscreen
-        ></iframe>
-      </div>
-      <div class="smeta">
-        <div>
-          <div class="stitle">Late Night Session 003</div>
-          <div class="ssub">Mux + Twitch · MPC One</div>
+    <!-- BRAND INFO PANEL (moved from hero) -->
+    <div class="spanel" style="padding:24px 18px 20px;">
+      <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+        <div style="font-family:var(--fm);font-size:9px;letter-spacing:0.2em;color:var(--chrome);margin-bottom:12px;">DKTR N9NE · AUSTIN / TOKYO · EST. 2020</div>
+        <div style="font-family:var(--fd);font-size:36px;font-weight:900;letter-spacing:-0.02em;line-height:0.9;margin-bottom:6px;">
+          CH.<span style="background:linear-gradient(170deg,#F5A878 0%,var(--chrome) 50%,#8B3A0A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:48px;letter-spacing:-0.04em;">9</span>
         </div>
-        <button class="watch-btn">Watch</button>
+        <div style="font-family:var(--fd);font-size:15px;font-weight:600;letter-spacing:0.08em;color:var(--white2);margin-bottom:12px;">DIRECT · TO · FAN</div>
+        <p style="font-family:var(--fb);font-size:12px;font-weight:300;color:var(--white2);line-height:1.6;margin-bottom:16px;">8 projects on Untitled.stream. Live on Mux. Fan tiers on Stripe. No algorithm. No platform tax.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-primary" style="font-size:12px;padding:9px 18px;">Join Free</button>
+          <button class="btn-secondary" style="font-size:12px;padding:9px 14px;">Browse</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);">
+        <div style="background:var(--navy);padding:12px 14px;">
+          <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--chrome2);line-height:1;">2.4K</div>
+          <div style="font-family:var(--fm);font-size:8px;color:var(--white3);letter-spacing:0.12em;margin-top:3px;">FANS</div>
+        </div>
+        <div style="background:var(--navy);padding:12px 14px;">
+          <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--white);line-height:1;">8</div>
+          <div style="font-family:var(--fm);font-size:8px;color:var(--white3);letter-spacing:0.12em;margin-top:3px;">PROJECTS</div>
+        </div>
+        <div style="background:var(--navy);padding:12px 14px;">
+          <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--white);line-height:1;">$3.2K</div>
+          <div style="font-family:var(--fm);font-size:8px;color:var(--white3);letter-spacing:0.12em;margin-top:3px;">REV MTD</div>
+        </div>
+        <div style="background:var(--navy);padding:12px 14px;">
+          <div style="font-family:var(--fd);font-size:22px;font-weight:800;color:var(--chrome2);line-height:1;">247</div>
+          <div style="font-family:var(--fm);font-size:8px;color:var(--white3);letter-spacing:0.12em;margin-top:3px;">WATCHING</div>
+        </div>
       </div>
     </div>
 
@@ -1122,7 +1101,6 @@ function drawArt(id,fn){
 }
 
 function init(){
-  drawHero();
   arts.forEach((fn,i)=>{ if(i===0||i===1||i===2||i===3||i===4||i===6||i===7) return; drawArt('art'+i,fn); });
 
   // tabs
@@ -1150,7 +1128,6 @@ function init(){
 
 window.addEventListener('load', init);
 window.addEventListener('resize',()=>{
-  drawHero();drawStream();
   arts.forEach((fn,i)=>{ if(i===0||i===1||i===2||i===3||i===4||i===6||i===7) return; drawArt('art'+i,fn); });
 });
 </script>
