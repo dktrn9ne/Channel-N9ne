@@ -1,731 +1,580 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Channel N9NE v2 — Direct‑to‑Fan</title>
 
 <style>
-:root {
-  --content-gutter: clamp(14px, 4vw, 30px);
-  --bg-deep: #050711;
-  --bg-grad-top: #0b1020;
-  --bg-grad-bot: #05060a;
-  --accent: #00e5ff;
-  --accent-soft: rgba(0, 229, 255, 0.22);
-  --accent-soft-bg: rgba(0, 229, 255, 0.10);
-  --text-soft: rgba(214, 242, 255, 0.9);
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=Martian+Mono:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#080808;--bg1:#101010;--bg2:#161616;--bg3:#1c1c1c;
+--burnt:#C4581A;--burnt2:#E06820;--teal:#19B8B0;--teal2:#22D4CB;
+--cream:#F0EBE0;--cream2:rgba(240,235,224,0.55);--cream3:rgba(240,235,224,0.2);
+--border:rgba(240,235,224,0.07);--border2:rgba(240,235,224,0.14);
+--font-d:'Syne',sans-serif;--font-m:'Martian Mono',monospace
 }
+.cn{background:var(--bg);font-family:var(--font-d);color:var(--cream);min-height:900px}
 
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: radial-gradient(circle at top, #141b32 0%, #05060a 52%, #020308 100%);
-  color: #f5fbff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", Arial, sans-serif;
-  overflow-x: hidden;
-}
-body { min-height: 100vh; position: relative; }
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:28px;height:28px;background:var(--burnt);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px;font-weight:500;color:var(--cream);letter-spacing:0.02em}
+.brand-name{font-size:15px;font-weight:800;letter-spacing:-0.01em;color:var(--cream)}
+.brand-name span{color:var(--teal)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.live-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid rgba(26,184,176,0.35);background:rgba(26,184,176,0.08);font-family:var(--font-m);font-size:10px;color:var(--teal);letter-spacing:0.1em}
+.pulse{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.tier-chip{padding:5px 12px;font-family:var(--font-m);font-size:10px;letter-spacing:0.08em;border:1px solid var(--burnt);color:var(--burnt);cursor:pointer;transition:all .15s}
+.tier-chip:hover{background:var(--burnt);color:var(--cream)}
 
-/* Background stars (reusing simple variant) */
-.star-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-.star {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,0.5) 60%, transparent 80%);
-  opacity: 0.85;
-  filter: drop-shadow(0 0 6px rgba(0, 225, 255, 0.7));
-  animation: twinkle 6s ease-in-out infinite;
-}
-@keyframes twinkle {
-  0%, 100% { opacity: 0.25; }
-  40% { opacity: 1; }
-  60% { opacity: 0.7; }
-}
+.layout{display:grid;grid-template-columns:1fr 300px;min-height:calc(100vh - 57px)}
 
-#shell {
-  position: relative;
-  z-index: 10;
-  min-height: 100vh;
-  padding: 26px var(--content-gutter) 80px var(--content-gutter);
-  max-width: 1200px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  row-gap: 28px;
-}
+.main-col{border-right:1px solid var(--border)}
 
-/* HEADER / LOGO */
-.header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.header-img {
-  width: min(320px, 80vw);
-  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.9));
-}
-.header-pill {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.45);
-  background: rgba(4, 17, 26, 0.9);
-  font-size: 0.8rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
+.hero-banner{position:relative;background:var(--bg1);border-bottom:1px solid var(--border);overflow:hidden}
+.hero-canvas-wrap{width:100%;aspect-ratio:21/8;position:relative}
+.hero-canvas-wrap canvas{width:100%;height:100%;display:block}
+.hero-overlay{position:absolute;inset:0;display:flex;align-items:flex-end;padding:20px 24px}
+.hero-overlay-inner{display:flex;align-items:flex-end;justify-content:space-between;width:100%}
+.hero-meta{display:flex;flex-direction:column;gap:6px}
+.hero-eyebrow{font-family:var(--font-m);font-size:9px;letter-spacing:0.18em;color:var(--teal);text-transform:uppercase}
+.hero-title{font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1;color:var(--cream)}
+.hero-sub{font-family:var(--font-m);font-size:10px;color:var(--cream2);letter-spacing:0.04em;margin-top:2px}
+.hero-actions{display:flex;gap:8px}
+.btn-fire{padding:10px 20px;background:var(--burnt);border:none;font-family:var(--font-m);font-size:11px;letter-spacing:0.08em;color:var(--cream);cursor:pointer;transition:background .15s;font-weight:500}
+.btn-fire:hover{background:var(--burnt2)}
+.btn-ghost{padding:10px 16px;background:transparent;border:1px solid var(--border2);font-family:var(--font-m);font-size:11px;letter-spacing:0.08em;color:var(--cream2);cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--cream3);color:var(--cream)}
 
-/* HERO: Now playing + primary CTAs */
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr);
-  gap: clamp(18px, 4vw, 32px);
-  align-items: center;
-}
-.hero-text h1 {
-  margin: 0 0 8px;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-}
-.hero-text p {
-  margin: 0;
-  font-size: 0.98rem;
-  max-width: 42ch;
-  color: var(--text-soft);
-}
-.hero-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-.hero-tag {
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(5, 14, 25, 0.9);
-  border: 1px solid rgba(0, 229, 255, 0.28);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-.hero-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 14px;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 11px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.5);
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
-}
-.btn-primary {
-  background: linear-gradient(135deg, #00e5ff, #00bfff);
-  color: #021015;
-  box-shadow: 0 16px 40px rgba(0, 229, 255, 0.3);
-}
-.btn-secondary {
-  background: rgba(0, 229, 255, 0.12);
-  color: var(--text-soft);
-}
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
-}
+.section-bar{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);overflow-x:auto}
+.sec-tab{padding:12px 20px;font-family:var(--font-m);font-size:10px;letter-spacing:0.1em;color:var(--cream2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.sec-tab:hover{color:var(--cream)}
+.sec-tab.on{color:var(--teal);border-bottom-color:var(--teal)}
 
-.hero-now-playing {
-  border-radius: 16px;
-  padding: 14px 16px;
-  background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.14), rgba(0, 0, 0, 0.9));
-  border: 1px solid rgba(0, 229, 255, 0.24);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.65);
-}
-.hero-now-playing h2 {
-  margin: 0 0 8px;
-  font-size: 0.92rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-.hero-release {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 12px;
-  align-items: center;
-}
-.hero-cover {
-  width: 72px;
-  height: 72px;
-  background: linear-gradient(135deg, #ff6ea8, #8a4bff);
-  border-radius: 10px;
-}
-.hero-release-main h3 {
-  margin: 0 0 4px;
-}
-.hero-release-main small {
-  color: rgba(190, 225, 255, 0.8);
-}
-.hero-release-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.hero-release-actions button,
-.hero-release-actions a {
-  font-size: 0.85rem;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.5);
-  background: rgba(0, 14, 24, 0.9);
-  color: var(--text-soft);
-  text-decoration: none;
-}
-.hero-release-actions button {
-  cursor: pointer;
-}
+.section-body{padding:20px 24px}
 
-/* STRIP NAV */
-.strip-nav {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 4px;
-}
-.strip-pill {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.32);
-  background: rgba(2, 11, 20, 0.92);
-  font-size: 0.8rem;
-  text-decoration: none;
-  color: var(--text-soft);
-}
+.releases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:24px}
+.rel-card{background:var(--bg1);padding:0;cursor:pointer;transition:background .15s;position:relative;overflow:hidden}
+.rel-card:hover{background:var(--bg2)}
+.rel-card.feat{grid-column:span 2}
+.rel-art{width:100%;aspect-ratio:1/1;display:block}
+.rel-card.feat .rel-art{aspect-ratio:2/1}
+.rel-info{padding:10px 12px;border-top:1px solid var(--border)}
+.rel-title{font-size:13px;font-weight:700;letter-spacing:-0.01em;color:var(--cream);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rel-meta-row{display:flex;align-items:center;justify-content:space-between}
+.rel-genre{font-family:var(--font-m);font-size:9px;color:var(--cream2);letter-spacing:0.08em}
+.rel-price{font-family:var(--font-m);font-size:11px;color:var(--teal);font-weight:500}
+.rel-badge{position:absolute;top:8px;left:8px;padding:3px 7px;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;background:var(--bg);border:1px solid var(--border2);color:var(--cream2)}
+.rel-badge.hot{background:var(--burnt);border-color:var(--burnt);color:var(--cream)}
+.rel-badge.tape{background:rgba(26,184,176,0.15);border-color:rgba(26,184,176,0.4);color:var(--teal)}
+.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;background:rgba(8,8,8,0.45)}
+.rel-card:hover .play-overlay{opacity:1}
+.play-btn-circ{width:40px;height:40px;border:1px solid rgba(240,235,224,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.play-tri{width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:12px solid var(--cream);margin-left:2px}
 
-/* GRID: Music + Merch + Live+Chat */
-.main-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
-  gap: 22px;
-  margin-top: 18px;
-}
-.card {
-  border-radius: 16px;
-  background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.12), rgba(2, 8, 16, 0.98));
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 14px 16px 16px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.85);
-}
-.card h2 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-}
-.card small {
-  color: var(--text-soft);
-}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:24px}
+.stat-card{background:var(--bg1);padding:14px 16px}
+.stat-label{font-family:var(--font-m);font-size:9px;letter-spacing:0.12em;color:var(--cream2);margin-bottom:6px}
+.stat-val{font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--cream);line-height:1}
+.stat-delta{font-family:var(--font-m);font-size:9px;color:var(--teal);margin-top:4px}
 
-.music-grid {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-.release-card {
-  border-radius: 12px;
-  background: rgba(3, 9, 18, 0.96);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 10px;
-}
-.release-cover {
-  height: 120px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ff6ea8, #ffb84d);
-}
-.release-card h3 {
-  margin: 8px 0 4px;
-  font-size: 0.95rem;
-}
-.release-meta {
-  font-size: 0.8rem;
-  color: var(--text-soft);
-}
-.release-actions {
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.release-actions a {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.4);
-  font-size: 0.78rem;
-  text-decoration: none;
-  color: var(--text-soft);
-}
+.right-col{display:flex;flex-direction:column}
 
-.merch-grid {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-.merch-item {
-  border-radius: 12px;
-  background: rgba(3, 9, 18, 0.96);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 10px;
-}
-.merch-thumb {
-  height: 110px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #8a4bff, #00e5ff);
-}
-.merch-item h3 {
-  margin: 8px 0 4px;
-  font-size: 0.95rem;
-}
-.merch-item small { color: var(--text-soft); }
-.merch-item a {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.45);
-  text-decoration: none;
-  font-size: 0.8rem;
-  color: var(--text-soft);
-}
+.fan-panel{border-bottom:1px solid var(--border);padding:18px 16px}
+.panel-head{font-family:var(--font-m);font-size:9px;letter-spacing:0.14em;color:var(--cream2);margin-bottom:14px}
+.fan-tiers{display:flex;flex-direction:column;gap:8px}
+.tier-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);cursor:pointer;transition:all .15s;position:relative}
+.tier-row:hover{border-color:var(--border2);background:var(--bg2)}
+.tier-row.active{border-color:var(--burnt);background:rgba(196,88,26,0.08)}
+.tier-active-line{position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--burnt)}
+.tier-name{font-size:13px;font-weight:700;letter-spacing:-0.01em}
+.tier-desc{font-family:var(--font-m);font-size:9px;color:var(--cream2);margin-top:2px;letter-spacing:0.04em}
+.tier-price-col{text-align:right}
+.tier-price{font-family:var(--font-m);font-size:12px;font-weight:500;color:var(--teal)}
+.tier-per{font-family:var(--font-m);font-size:9px;color:var(--cream2)}
 
-/* Right side: Live + Chat + Archive re-used from v1 */
-.live-card {
-  padding: 0;
-  display: grid;
-  grid-template-rows: auto auto auto;
-  row-gap: 10px;
-}
-.live-top {
-  padding: 14px 16px 0;
-}
-.live-top h2 {
-  margin: 0 0 4px;
-  font-size: 1rem;
-}
-.live-top small { color: var(--text-soft); }
-.live-player-wrapper {
-  padding: 12px 14px 0;
-}
-.mux-player-container {
-  width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(0, 229, 255, 0.35);
-}
-mux-player { width: 100%; height: 100%; }
+.stream-panel{border-bottom:1px solid var(--border);padding:18px 16px}
+.stream-frame{background:var(--bg);border:1px solid var(--border);aspect-ratio:16/9;width:100%;position:relative;overflow:hidden;margin-bottom:10px}
+.stream-frame canvas{width:100%;height:100%;display:block}
+.stream-frame-overlay{position:absolute;bottom:7px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:flex-end}
+.stream-bot-label{font-family:var(--font-m);font-size:9px;color:rgba(240,235,224,0.6);letter-spacing:0.08em}
+.viewer-num{font-family:var(--font-m);font-size:9px;color:var(--teal)}
+.stream-info-row{display:flex;align-items:center;justify-content:space-between}
+.stream-now{font-size:12px;font-weight:700;color:var(--cream)}
+.stream-via{font-family:var(--font-m);font-size:9px;color:var(--cream2)}
+.join-btn{padding:7px 14px;background:var(--burnt);border:none;font-family:var(--font-m);font-size:9px;letter-spacing:0.1em;color:var(--cream);cursor:pointer;font-weight:500;transition:background .15s}
+.join-btn:hover{background:var(--burnt2)}
 
-.live-meta-row {
-  padding: 10px 16px 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-.live-pill {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 66, 114, 0.22);
-  border: 1px solid rgba(255, 66, 114, 0.55);
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.live-meta-row a {
-  font-size: 0.8rem;
-  text-decoration: none;
-  color: var(--accent);
-}
-
-/* Chat / Archive reuse basic layout */
-.chat-archive-row {
-  padding: 8px 14px 14px;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr);
-  gap: 14px;
-}
-
-#chat {
-  border-radius: 14px;
-  background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.18), rgba(4, 10, 20, 0.98));
-  border: 1px solid rgba(0, 229, 255, 0.35);
-  padding: 10px 12px;
-  box-shadow: 0 14px 36px rgba(0,0,0,0.9);
-}
-
-/* for brevity: keep chat internals from v1 via iframe or simple placeholder */
-#chat-placeholder {
-  font-size: 0.9rem;
-  color: var(--text-soft);
-}
-
-.archive-card {
-  border-radius: 14px;
-  background: rgba(3, 9, 18, 0.96);
-  border: 1px solid rgba(0, 229, 255, 0.25);
-  padding: 10px 12px;
-}
-.archive-card h3 {
-  margin: 0 0 6px;
-  font-size: 0.95rem;
-}
-#archive-carousel {
-  margin-top: 8px;
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-}
-.slide {
-  flex: 0 0 clamp(220px, 32vw, 320px);
-  border-radius: 10px;
-  background: rgba(2, 8, 16, 0.96);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  padding: 8px;
-}
-.slide-thumb {
-  width: 100%;
-  aspect-ratio: 16/9;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #00e5ff, #8a4bff);
-}
-.slide span {
-  display: block;
-  font-size: 0.8rem;
-  margin-top: 4px;
-}
-
-/* Lore / signup */
-.lore {
-  margin-top: 24px;
-  border-radius: 14px;
-  background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.1), rgba(5, 8, 16, 0.98));
-  border: 1px solid rgba(0, 229, 255, 0.18);
-  padding: 16px 16px 18px;
-  box-shadow: 0 16px 36px rgba(0,0,0,0.85);
-}
-.lore h2 {
-  margin: 0 0 6px;
-}
-.lore p {
-  margin: 0;
-  font-size: 0.92rem;
-  max-width: 52ch;
-  color: var(--text-soft);
-}
-.signup-row {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.signup-row input {
-  flex: 1;
-  min-width: 200px;
-  padding: 9px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.5);
-  background: rgba(3, 10, 20, 0.96);
-  color: #f5fbff;
-}
-.signup-row button {
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 229, 255, 0.7);
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.3), rgba(0, 229, 255, 0.12));
-  color: var(--text-soft);
-  cursor: pointer;
-}
-
-@media (max-width: 960px) {
-  .hero { grid-template-columns: 1fr; }
-  .main-grid { grid-template-columns: 1fr; }
-  .chat-archive-row { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  #shell { padding-top: 18px; }
-  .hero-now-playing { margin-top: 6px; }
-}
+.activity-panel{padding:18px 16px;flex:1}
+.activity-list{display:flex;flex-direction:column;gap:0}
+.act-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.act-item:last-child{border-bottom:none}
+.act-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:9px;font-weight:500;flex-shrink:0}
+.act-text{flex:1}
+.act-name{font-size:12px;font-weight:700;color:var(--cream)}
+.act-action{font-family:var(--font-m);font-size:9px;color:var(--cream2);margin-top:1px}
+.act-time{font-family:var(--font-m);font-size:9px;color:var(--cream3)}
+.act-amt{font-family:var(--font-m);font-size:10px;color:var(--teal);font-weight:500}
 </style>
 
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
-<link rel="preconnect" href="https://player.mux.com" crossorigin>
-<script defer src="https://unpkg.com/@mux/mux-player"></script>
-</head>
-<body>
-<div class="star-layer" id="stars"></div>
+<h2 class="sr-only">Channel N9NE v2 — Direct-to-fan music platform prototype</h2>
 
-<div id="shell">
-  <!-- HEADER / LOGO -->
-  <header class="header">
-    <img src="channel9.png" alt="Channel N9NE logo" class="header-img" />
-    <div class="header-pill">Direct‑to‑fan music, merch, and live streams</div>
-  </header>
+<div class="cn">
 
-  <!-- HERO: Now Playing + CTAs -->
-  <section class="hero" aria-label="Channel N9NE overview">
-    <div class="hero-text">
-      <h1>Channel N9NE v2</h1>
-      <p>
-        Your own mini‑platform. Stream live, sell music and drops, and bring fans
-        straight into the DKTR N9NE ecosystem — no middleman.
-      </p>
-      <div class="hero-tags">
-        <span class="hero-tag">Live + VOD</span>
-        <span class="hero-tag">Music & Merch</span>
-        <span class="hero-tag">Direct‑to‑Fan</span>
-      </div>
-      <div class="hero-ctas">
-        <a href="#live" class="btn btn-primary">▶ Play Live / Latest</a>
-        <a href="#merch" class="btn btn-secondary">🛒 Shop the Drop</a>
-      </div>
-    </div>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">N9</div>
+    <div class="brand-name">CHANNEL <span>N9NE</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-chip"><div class="pulse"></div>LIVE NOW</div>
+    <div class="tier-chip">JOIN THE CHANNEL</div>
+  </div>
+</div>
 
-    <aside class="hero-now-playing">
-      <h2>Now Playing / Latest Release</h2>
-      <div class="hero-release">
-        <div class="hero-cover"></div>
-        <div class="hero-release-main">
-          <h3>Ghetto Haiku</h3>
-          <small>Latest release by DKTR N9NE</small>
-          <div class="hero-release-actions">
-            <button type="button">Play</button>
-            <a href="#music">View in Library</a>
-            <a href="#merch">Own the music</a>
+<div class="layout">
+  <div class="main-col">
+
+    <div class="hero-banner">
+      <div class="hero-canvas-wrap"><canvas id="heroCvs"></canvas></div>
+      <div class="hero-overlay">
+        <div class="hero-overlay-inner">
+          <div class="hero-meta">
+            <div class="hero-eyebrow">DKTR N9NE · Austin / Tokyo · Direct-to-fan</div>
+            <div class="hero-title">Your channel.<br>No algorithm.</div>
+            <div class="hero-sub">8 catalog releases · Live sessions · Fan exclusives</div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn-fire">JOIN FREE</button>
+            <button class="btn-ghost">EXPLORE</button>
           </div>
         </div>
       </div>
-    </aside>
-  </section>
-
-  <!-- Strip nav -->
-  <nav class="strip-nav" aria-label="Section shortcuts">
-    <a href="#music" class="strip-pill">Music Library</a>
-    <a href="#merch" class="strip-pill">Merch & Drops</a>
-    <a href="#live" class="strip-pill">Live + Chat</a>
-  </nav>
-
-  <!-- MAIN GRID: left (music + merch), right (live + chat + archive) -->
-  <section class="main-grid" aria-label="Channel layout">
-    <!-- LEFT COLUMN -->
-    <div>
-      <!-- MUSIC LIBRARY -->
-      <section id="music" class="card" aria-label="Music library">
-        <h2>Music Library</h2>
-        <small>Stream catalog or send fans to own the files.</small>
-        <div class="music-grid">
-          <article class="release-card">
-            <div class="release-cover"></div>
-            <h3>Ghetto Haiku</h3>
-            <div class="release-meta">Album • 12 tracks</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/hGBEJT3s3ZGDzItNJYgC6" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#00e5ff,#ff6ea8);"></div>
-            <h3>Ghetto Haiku Kaizen</h3>
-            <div class="release-meta">Deluxe edition</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/7knQBmL1NgffFXMw9LT2w" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#ffb84d,#8a4bff);"></div>
-            <h3>90008</h3>
-            <div class="release-meta">Project</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/91M8bDqe85kvlUASuqwqQ" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-        </div>
-
-        <div class="music-grid" style="margin-top:10px;">
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#8a4bff,#00e5ff);"></div>
-            <h3>78723</h3>
-            <div class="release-meta">Single</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/qAvMRVsDDr9Iy9KPT7DSm" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#ff6ea8,#00e5ff);"></div>
-            <h3>Hoop Dreams</h3>
-            <div class="release-meta">Single</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/KSr0OITh3ou4nNMmlc164" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#00e5ff,#ffb84d);"></div>
-            <h3>The Mailroom</h3>
-            <div class="release-meta">Single</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/l0YGdFRrrvH2gMNlff7gY" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#8a4bff,#ff6ea8);"></div>
-            <h3>Dazed N Confused</h3>
-            <div class="release-meta">Single</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/teCtRJ23f3g7kYCKMzZgg" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-          <article class="release-card">
-            <div class="release-cover" style="background:linear-gradient(135deg,#ffb84d,#00e5ff);"></div>
-            <h3>The Prescription</h3>
-            <div class="release-meta">Single</div>
-            <div class="release-actions">
-              <a href="#live">Play</a>
-              <a href="https://untitled.stream/buy/project/xgYmuSlhZAa84Q3vTDhQP" target="_blank" rel="noopener noreferrer">Own on [untitled]</a>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <!-- MERCH / DROPS -->
-      <section id="merch" class="card" aria-label="Merch and drops">
-        <h2>Current Drop</h2>
-        <small>Turn the catalog into artifacts: apparel, vinyl, prints, and more.</small>
-        <div class="merch-grid">
-          <article class="merch-item">
-            <div class="merch-thumb"></div>
-            <h3>Ghetto Haiku Tee</h3>
-            <small>Screenprinted • Limited run</small>
-            <a href="#">View item</a>
-          </article>
-          <article class="merch-item">
-            <div class="merch-thumb" style="background:linear-gradient(135deg,#ff6ea8,#00e5ff);"></div>
-            <h3>Vinyl: Ghetto Haiku</h3>
-            <small>Numbered edition vinyl</small>
-            <a href="#">View item</a>
-          </article>
-          <article class="merch-item">
-            <div class="merch-thumb" style="background:linear-gradient(135deg,#00e5ff,#ffb84d);"></div>
-            <h3>Channel N9NE Print</h3>
-            <small>Art print • Signed</small>
-            <a href="#">View item</a>
-          </article>
-        </div>
-      </section>
     </div>
 
-    <!-- RIGHT COLUMN: Live + chat + archive (simplified) -->
-    <div id="live" class="card live-card" aria-label="Live stream and chat">
-      <div class="live-top">
-        <h2>Live Stream</h2>
-        <small>Mux‑powered live video. When you go live, Channel N9NE becomes a venue.</small>
-      </div>
-      <div class="live-player-wrapper">
-        <div class="mux-player-container">
-          <mux-player
-            stream-type="live"
-            playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-            primary-color="#00e5ff"
-            metadata-video-title="Live Stream"
-            autoplay muted>
-          </mux-player>
+    <div class="section-bar">
+      <div class="sec-tab on">RELEASES</div>
+      <div class="sec-tab">EXCLUSIVES</div>
+      <div class="sec-tab">BEATS 4 LEASE</div>
+      <div class="sec-tab">SESSIONS</div>
+      <div class="sec-tab">PRESS KIT</div>
+    </div>
+
+    <div class="section-body">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">FANS</div>
+          <div class="stat-val">2.4K</div>
+          <div class="stat-delta">+18 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">CATALOG</div>
+          <div class="stat-val">8</div>
+          <div class="stat-delta">releases</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">REVENUE</div>
+          <div class="stat-val">$3.2K</div>
+          <div class="stat-delta">+$340 MTD</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">LIVE</div>
+          <div class="stat-val" style="color:var(--teal)">ON</div>
+          <div class="stat-delta">247 watching</div>
         </div>
       </div>
-      <div class="live-meta-row">
-        <span class="live-pill">Live</span>
-        <span style="font-size:0.85rem;color:var(--text-soft);">Stream whenever / wherever. This window is home base.</span>
-      </div>
 
-      <div class="chat-archive-row">
-        <section id="chat" aria-label="Live chat">
-          <div id="chat-placeholder">
-            Live chat wiring from v1 can be embedded here (Supabase chat, Twitch, etc.).
-          </div>
-        </section>
-
-        <section class="archive-card" aria-label="Previous streams">
-          <h3>Previous Streams</h3>
-          <small>Turn sessions into an always‑on library.</small>
-          <div id="archive-carousel">
-            <div class="slide">
-              <div class="slide-thumb"></div>
-              <span>Late Night Set • 1h12m</span>
-            </div>
-            <div class="slide">
-              <div class="slide-thumb" style="background:linear-gradient(135deg,#8a4bff,#00e5ff);"></div>
-              <span>Ghetto Haiku Stories • 48m</span>
+      <div class="releases-grid">
+        <div class="rel-card feat" onclick="sendPrompt('Design the full detail page for The Perscription on Channel N9NE v2 — cassette artwork, tracklist, purchase flow')">
+          <canvas class="rel-art" id="art0"></canvas>
+          <div class="rel-badge tape">CASSETTE</div>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">The Perscription</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">ALT-R&B · 2023</span>
+              <span class="rel-price">$12.99</span>
             </div>
           </div>
-        </section>
+        </div>
+
+        <div class="rel-card" onclick="sendPrompt('Show me the Midnight Drip release card expanded with tracklist and streaming options')">
+          <canvas class="rel-art" id="art1"></canvas>
+          <div class="rel-badge hot">NEW</div>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">Midnight Drip</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">PLUGGNB</span>
+              <span class="rel-price">$9.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art2"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">Tokyo Flux</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">INSTRUMENTAL</span>
+              <span class="rel-price">$7.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art3"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">808 Séances</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">ALT-R&B</span>
+              <span class="rel-price">$9.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art4"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">Void Protocol</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">PLUGGNB</span>
+              <span class="rel-price">$8.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art5"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">DKTR Vision</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">EP</span>
+              <span class="rel-price">$14.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art6"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">Neon Residue</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">ALT-R&B</span>
+              <span class="rel-price">$9.99</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-card">
+          <canvas class="rel-art" id="art7"></canvas>
+          <div class="play-overlay"><div class="play-btn-circ"><div class="play-tri"></div></div></div>
+          <div class="rel-info">
+            <div class="rel-title">Signal Static</div>
+            <div class="rel-meta-row">
+              <span class="rel-genre">PLUGGNB</span>
+              <span class="rel-price">$8.99</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="right-col">
+
+    <div class="stream-panel">
+      <div class="panel-head">LIVE NOW · MUX STREAM</div>
+      <div class="stream-frame">
+        <canvas id="streamCvs"></canvas>
+        <div class="stream-frame-overlay">
+          <span class="stream-bot-label">MUX · HD 1080</span>
+          <span class="viewer-num">247 live</span>
+        </div>
+      </div>
+      <div class="stream-info-row">
+        <div>
+          <div class="stream-now">Late Night Session 003</div>
+          <div class="stream-via">Mux + Twitch · MPC One</div>
+        </div>
+        <button class="join-btn">WATCH</button>
       </div>
     </div>
-  </section>
 
-  <!-- LORE / EMAIL CAPTURE -->
-  <section class="lore" aria-label="DKTR N9NE ecosystem">
-    <h2>DKTR N9NE is an ecosystem</h2>
-    <p>
-      Channel N9NE is the control room: music, drops, and live experiences all in
-      one place. No gatekeepers, no rented timelines — just direct connection with
-      the people who care enough to show up.
-    </p>
-    <div class="signup-row">
-      <input type="email" placeholder="Enter your email to join the list" />
-      <button type="button">Join Channel</button>
+    <div class="fan-panel">
+      <div class="panel-head">FAN TIERS · STRIPE</div>
+      <div class="fan-tiers">
+        <div class="tier-row" onclick="this.classList.toggle('active'); this.querySelector('.tier-active-line') && this.querySelector('.tier-active-line').remove() || (() => { let l=document.createElement('div'); l.className='tier-active-line'; this.prepend(l); })()">
+          <div>
+            <div class="tier-name">FREE</div>
+            <div class="tier-desc">Public releases · community</div>
+          </div>
+          <div class="tier-price-col">
+            <div class="tier-price">$0</div>
+            <div class="tier-per">/mo</div>
+          </div>
+        </div>
+        <div class="tier-row active" style="border-color:var(--burnt);background:rgba(196,88,26,0.08)">
+          <div class="tier-active-line"></div>
+          <div>
+            <div class="tier-name">PLUGGED IN</div>
+            <div class="tier-desc">Early drops · session replays</div>
+          </div>
+          <div class="tier-price-col">
+            <div class="tier-price">$5</div>
+            <div class="tier-per">/mo</div>
+          </div>
+        </div>
+        <div class="tier-row" onclick="sendPrompt('What should the INNER CIRCLE fan tier include for Channel N9NE? Think stem downloads, beat licensing access, private Discord')">
+          <div>
+            <div class="tier-name">INNER CIRCLE</div>
+            <div class="tier-desc">Stems · private Discord · stems</div>
+          </div>
+          <div class="tier-price-col">
+            <div class="tier-price">$15</div>
+            <div class="tier-per">/mo</div>
+          </div>
+        </div>
+        <div class="tier-row" onclick="sendPrompt('Design the DKTR tier for Channel N9NE — what does a $49/mo superfan get? Think custom beats, video calls, credits')">
+          <div>
+            <div class="tier-name" style="color:var(--teal)">DKTR</div>
+            <div class="tier-desc">Custom beats · 1:1 · credits</div>
+          </div>
+          <div class="tier-price-col">
+            <div class="tier-price" style="color:var(--burnt)">$49</div>
+            <div class="tier-per">/mo</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
+
+    <div class="activity-panel">
+      <div class="panel-head">FAN ACTIVITY</div>
+      <div class="activity-list">
+        <div class="act-item">
+          <div class="act-avatar" style="background:rgba(196,88,26,0.2);color:var(--burnt)">JD</div>
+          <div class="act-text">
+            <div class="act-name">jd.wav</div>
+            <div class="act-action">purchased The Perscription</div>
+          </div>
+          <div>
+            <div class="act-amt">$12.99</div>
+            <div class="act-time">2m ago</div>
+          </div>
+        </div>
+        <div class="act-item">
+          <div class="act-avatar" style="background:rgba(26,184,176,0.15);color:var(--teal)">KM</div>
+          <div class="act-text">
+            <div class="act-name">kmoneybeats</div>
+            <div class="act-action">joined INNER CIRCLE</div>
+          </div>
+          <div>
+            <div class="act-amt">$15/mo</div>
+            <div class="act-time">11m ago</div>
+          </div>
+        </div>
+        <div class="act-item">
+          <div class="act-avatar" style="background:rgba(240,235,224,0.08);color:var(--cream2)">AL</div>
+          <div class="act-text">
+            <div class="act-name">alixmirror</div>
+            <div class="act-action">licensed Midnight Drip</div>
+          </div>
+          <div>
+            <div class="act-amt">$49.99</div>
+            <div class="act-time">38m ago</div>
+          </div>
+        </div>
+        <div class="act-item">
+          <div class="act-avatar" style="background:rgba(196,88,26,0.2);color:var(--burnt)">RV</div>
+          <div class="act-text">
+            <div class="act-name">r.vega</div>
+            <div class="act-action">upgraded to DKTR tier</div>
+          </div>
+          <div>
+            <div class="act-amt">$49/mo</div>
+            <div class="act-time">1h ago</div>
+          </div>
+        </div>
+        <div class="act-item">
+          <div class="act-avatar" style="background:rgba(26,184,176,0.15);color:var(--teal)">TS</div>
+          <div class="act-text">
+            <div class="act-name">thxsolo</div>
+            <div class="act-action">downloaded Tokyo Flux stems</div>
+          </div>
+          <div>
+            <div class="act-amt">INNER</div>
+            <div class="act-time">2h ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
 </div>
 
 <script>
-// Simple stars for v2
-const layer = document.getElementById('stars');
-if (layer) {
-  const count = 140;
-  for (let i = 0; i < count; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.top = Math.random() * 100 + '%';
-    s.style.left = Math.random() * 100 + '%';
-    s.style.animationDelay = -(Math.random() * 6).toFixed(2) + 's';
-    layer.appendChild(s);
-  }
+const DPR = window.devicePixelRatio || 1;
+
+function initCanvas(el, w, h) {
+  el.width = w * DPR; el.height = h * DPR;
+  el.style.width = w + 'px'; el.style.height = h + 'px';
+  const ctx = el.getContext('2d'); ctx.scale(DPR, DPR);
+  return ctx;
 }
+
+function drawHero(cvs) {
+  const w = cvs.parentElement.offsetWidth, h = cvs.parentElement.offsetHeight || (w * 8/21);
+  const ctx = initCanvas(cvs, w, h);
+  ctx.fillStyle = '#060606';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(26,184,176,0.12)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < w; x += 32) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 32) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  const cols = ['rgba(196,88,26,', 'rgba(26,184,176,', 'rgba(196,88,26,'];
+  const positions = [[w*0.25, h*0.4, h*0.55], [w*0.6, h*0.3, h*0.7], [w*0.85, h*0.5, h*0.45]];
+  positions.forEach(([cx, cy, r], i) => {
+    ctx.strokeStyle = cols[i % cols.length] + '0.18)';
+    ctx.lineWidth = 0.5;
+    for (let j = 0; j < 5; j++) {
+      ctx.beginPath(); ctx.arc(cx, cy, r * (0.3 + j*0.18), 0, Math.PI*2); ctx.stroke();
+    }
+  });
+  ctx.strokeStyle = 'rgba(196,88,26,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const y2 = h*0.62 + Math.sin(x*0.015)*18 + Math.sin(x*0.04)*8;
+    x===0 ? ctx.moveTo(x,y2) : ctx.lineTo(x,y2);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(26,184,176,0.22)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const y2 = h*0.55 + Math.sin(x*0.02+1)*12 + Math.sin(x*0.06)*5;
+    x===0 ? ctx.moveTo(x,y2) : ctx.lineTo(x,y2);
+  }
+  ctx.stroke();
+}
+
+function drawStream(cvs) {
+  const p = cvs.parentElement;
+  const w = p.offsetWidth, h = p.offsetHeight || (w*9/16);
+  const ctx = initCanvas(cvs, w, h);
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = 'rgba(26,184,176,0.15)';
+  ctx.lineWidth = 0.5;
+  for (let x=0;x<w;x+=18){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for (let y=0;y<h;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  ctx.strokeStyle = '#C4581A';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x=0;x<w;x++){
+    const v = Math.sin(x*0.06)*Math.sin(x*0.022)*h*0.22 + h/2;
+    x===0?ctx.moveTo(x,v):ctx.lineTo(x,v);
+  }
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(240,235,224,0.85)';
+  ctx.font = 'bold 13px Syne, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('DKTR N9NE', w/2, h/2 - 4);
+  ctx.fillStyle = 'rgba(26,184,176,0.7)';
+  ctx.font = '400 9px Martian Mono, monospace';
+  ctx.fillText('LIVE · MUX + TWITCH', w/2, h/2 + 12);
+}
+
+const artConfigs = [
+  {bg:'#080C12', fn: (ctx,w,h) => {
+    ctx.strokeStyle='rgba(196,88,26,0.7)';ctx.lineWidth=1.5;
+    const cx=w/2,cy=h/2,bw=w*0.52,bh=h*0.36;
+    roundRect(ctx,cx-bw/2,cy-bh/2,bw,bh,5);ctx.stroke();
+    const rr=bh*0.33;
+    [[cx-bw*0.22,cy],[cx+bw*0.22,cy]].forEach(([rx,ry])=>{
+      ctx.beginPath();ctx.arc(rx,ry,rr,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(rx,ry,rr*0.38,0,Math.PI*2);ctx.strokeStyle='rgba(26,184,176,0.5)';ctx.stroke();
+      ctx.strokeStyle='rgba(196,88,26,0.7)';
+    });
+    ctx.fillStyle='rgba(26,184,176,0.9)';ctx.font='bold 11px Syne,sans-serif';
+    ctx.textAlign='center';ctx.fillText('THE PERSCRIPTION',cx,cy-bh/2-8);
+  }},
+  {bg:'#060C0C', fn:(ctx,w,h)=>{
+    ctx.strokeStyle='rgba(26,184,176,0.65)';ctx.lineWidth=1;
+    for(let x=0;x<w;x++){const v=Math.sin(x*0.09)*Math.sin(x*0.03)*h*0.3+h/2;x===0?ctx.moveTo(x,v):ctx.lineTo(x,v);}
+    ctx.beginPath();for(let x=0;x<w;x++){const v=Math.sin(x*0.09)*Math.sin(x*0.03)*h*0.3+h/2;x===0?ctx.moveTo(x,v):ctx.lineTo(x,v);}ctx.stroke();
+  }},
+  {bg:'#060810', fn:(ctx,w,h)=>{
+    ctx.strokeStyle='rgba(107,139,255,0.5)';ctx.lineWidth=1;
+    for(let a=0,pr=0;a<8*Math.PI;a+=0.06){const r=a*(Math.min(w,h)*0.056);ctx.beginPath();ctx.arc(w/2+Math.cos(a)*r,h/2+Math.sin(a)*r,0.5,0,Math.PI*2);if(pr===0){ctx.moveTo(w/2+Math.cos(a)*r,h/2+Math.sin(a)*r);pr=1;}else ctx.lineTo(w/2+Math.cos(a)*r,h/2+Math.sin(a)*r);}
+    ctx.beginPath();for(let a=0;a<8*Math.PI;a+=0.06){const r=a*(Math.min(w,h)*0.056);const x2=w/2+Math.cos(a)*r,y2=h/2+Math.sin(a)*r;a===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);}ctx.stroke();
+  }},
+  {bg:'#100806', fn:(ctx,w,h)=>{
+    const draw=( cx,cy,s,f)=>{ctx.fillStyle=f;ctx.beginPath();ctx.moveTo(cx,cy-s);ctx.lineTo(cx+s*0.866,cy+s*0.5);ctx.lineTo(cx-s*0.866,cy+s*0.5);ctx.closePath();ctx.fill();};
+    draw(w/2,h/2,Math.min(w,h)*0.36,'rgba(196,88,26,0.2)');
+    draw(w/2,h/2,Math.min(w,h)*0.24,'rgba(196,88,26,0.45)');
+    draw(w/2,h/2,Math.min(w,h)*0.13,'rgba(196,88,26,0.85)');
+  }},
+  {bg:'#07070E', fn:(ctx,w,h)=>{
+    const cols2=['rgba(100,80,255,0.45)','rgba(60,40,200,0.3)','rgba(140,100,255,0.25)'];
+    for(let i=0;i<40;i++){const bx=Math.random()*w,by=Math.random()*h,bw2=w/8,bh2=h/8;ctx.fillStyle=cols2[i%3];ctx.fillRect(bx,by,bw2-2,bh2-2);}
+  }},
+  {bg:'#060C08', fn:(ctx,w,h)=>{
+    ctx.strokeStyle='rgba(80,180,100,0.5)';ctx.lineWidth=0.5;
+    for(let x=0;x<w;x+=22){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(let y=0;y<h;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    ctx.strokeStyle='rgba(80,180,100,0.9)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)*0.3,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)*0.18,0,Math.PI*2);ctx.stroke();
+  }},
+  {bg:'#100608', fn:(ctx,w,h)=>{
+    ctx.strokeStyle='rgba(255,90,90,0.55)';ctx.lineWidth=1;
+    for(let i=0;i<18;i++){ctx.beginPath();ctx.moveTo(0,h*i/18);ctx.lineTo(w,h*i/18+Math.sin(i)*12);ctx.stroke();}
+    ctx.strokeStyle='rgba(255,90,90,0.9)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(w*0.2,h*0.5);ctx.lineTo(w*0.8,h*0.5);ctx.stroke();
+  }},
+  {bg:'#070A0C', fn:(ctx,w,h)=>{
+    const segs=24;for(let i=0;i<segs;i++){const a=(i/segs)*Math.PI*2,a2=((i+1)/segs)*Math.PI*2,r=Math.min(w,h)*0.36;ctx.fillStyle=i%2===0?'rgba(196,88,26,0.3)':'rgba(26,184,176,0.2)';ctx.beginPath();ctx.moveTo(w/2,h/2);ctx.arc(w/2,h/2,r,a,a2);ctx.closePath();ctx.fill();}
+    ctx.strokeStyle='rgba(240,235,224,0.1)';ctx.lineWidth=0.5;ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)*0.36,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(w/2,h/2,Math.min(w,h)*0.18,0,Math.PI*2);ctx.fillStyle=var_or('#070A0C');ctx.fill();
+  }},
+];
+
+function var_or(fb){return fb;}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function drawArt(cvs, cfg) {
+  const p = cvs.parentElement;
+  const w = p.offsetWidth || 120, h = p.offsetHeight || 120;
+  const ctx = initCanvas(cvs, w, h);
+  ctx.fillStyle = cfg.bg; ctx.fillRect(0,0,w,h);
+  ctx.save(); cfg.fn(ctx, w, h); ctx.restore();
+}
+
+setTimeout(()=>{
+  const hero = document.getElementById('heroCvs');
+  if(hero) drawHero(hero);
+  const stream = document.getElementById('streamCvs');
+  if(stream) drawStream(stream);
+  for(let i=0;i<8;i++){
+    const c = document.getElementById('art'+i);
+    if(c && artConfigs[i]) drawArt(c, artConfigs[i]);
+  }
+  document.querySelectorAll('.sec-tab').forEach(t=>{
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.sec-tab').forEach(x=>x.classList.remove('on'));
+      this.classList.add('on');
+    });
+  });
+}, 120);
 </script>
-</body>
-</html>
