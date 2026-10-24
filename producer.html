@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Producer Studio · Channel N9NE</title>
+  <link rel="stylesheet" href="studio/studio.css">
+  <script type="module" src="studio/studio.mjs"></script>
+</head>
+<body>
+  <section id="producer-auth" class="panel" style="max-width:520px;margin:10vh auto" role="status"><h1 style="font-size:28px">Checking Studio access…</h1><p id="producer-auth-message">Your existing Studio session is required.</p><a href="studio.html" target="_top">Return to Studio sign-in</a></section>
+  <div id="producer-app" hidden>
+  <header class="topbar">
+    <a class="brand" href="studio.html" target="_top"><img src="channel9.png" alt=""><span>CHANNEL <b>N9NE</b></span></a>
+    <nav aria-label="Studio navigation"><a href="studio.html" target="_top">Studio control room</a><span class="pill">LOCAL-FIRST BETA</span></nav>
+  </header>
+  <main>
+    <div class="heading"><div><p class="eyebrow">FROM LONG STREAM TO SHORT STORY</p><h1>Your producer’s desk.</h1><p class="intro">Find the moment. Make the cut. Keep the final say.</p></div><button id="download-project" class="secondary" disabled>Save project JSON</button></div>
+    <ol class="steps" aria-label="Workflow"><li><b>01</b> Import a recording</li><li><b>02</b> Review the evidence</li><li><b>03</b> Approve & export</li></ol>
+    <p id="notice" class="notice" role="status" aria-live="polite">Recordings stay on this device. Nothing is uploaded or published.</p>
+    <p id="storage-warning" class="notice error" role="alert" hidden>Browser storage is unavailable or full. Changes are only in this tab: save a project JSON backup before leaving.</p>
+    <div class="workspace">
+      <section class="source-column" aria-labelledby="source-heading">
+        <div class="panel">
+          <div class="section-heading"><h2 id="source-heading">Source recording</h2><span id="source-badge" class="pill">NO SOURCE</span></div>
+          <div class="player-wrap"><video id="preview" controls playsinline preload="metadata" aria-label="Source recording preview"></video><div id="player-empty"><span class="empty-icon" aria-hidden="true">+</span><h3>Start with your recording</h3><p>Import an OBS recording or a VOD you own from Twitch, Kick, YouTube, or anywhere you stream.</p></div></div>
+          <div class="source-details"><strong id="source-name">No recording selected</strong><span id="source-duration">MP4, WebM, or another browser-playable video</span></div>
+          <div class="toolbar"><label class="button primary" for="recording">Choose recording<input id="recording" type="file" accept="video/*,.mkv,.mov" class="visually-hidden"></label><button id="add-clip" disabled>Mark a moment</button></div>
+          <p class="hint">“Mark a moment” starts a manual clip at the playhead. Recordings are not saved in the project; reselect the same file after returning.</p>
+        </div>
+        <div class="panel evidence-panel">
+          <div class="section-heading"><h2>Find five starting points</h2><span class="pill">TRANSCRIPT RULES</span></div>
+          <p>Import a matching SRT or WebVTT transcript to suggest up to five moments. Suggestions use words and timestamps, not AI video understanding or live detection.</p>
+          <div class="toolbar"><label class="button secondary" for="transcript">Import transcript<input id="transcript" type="file" accept=".vtt,.srt,text/vtt,text/plain" class="visually-hidden" disabled></label><button id="recommend" disabled>Suggest clips</button></div>
+          <p id="transcript-info" class="hint">No transcript yet. Manual clips work without one. No transcription service is connected.</p>
+        </div>
+        <section id="editor" class="panel" aria-labelledby="editor-heading" hidden>
+          <div class="section-heading"><h2 id="editor-heading">Shape this moment</h2><span id="clip-origin" class="pill"></span></div>
+          <form id="clip-form">
+            <label>Working title<input id="clip-title" maxlength="160" required></label>
+            <div class="trim-grid"><label>In · seconds<input id="clip-start" type="number" min="0" step="any" required></label><label>Out · seconds<input id="clip-end" type="number" min="0" step="any" required></label></div>
+            <div class="toolbar"><button type="button" id="set-in">Use playhead as in</button><button type="button" id="set-out">Use playhead as out</button><button type="button" id="preview-clip">Play selection</button></div>
+            <p class="hint">Clips must be within the recording and no longer than 120 seconds. Editing an approved clip sends it back for review.</p>
+            <label>Audience / editorial intent<select id="clip-audience"><option value="general">General audience</option><option value="community">Your community</option><option value="new-viewers">New viewers</option></select></label>
+            <label>Why this moment / producer notes<textarea id="clip-rationale" rows="3" maxlength="2000"></textarea></label>
+            <details open><summary>Transcript evidence for this cut</summary><p id="clip-transcript" class="transcript-text"></p></details>
+            <div class="toolbar"><button class="primary" type="submit">Save cut</button><button type="button" id="approve">Approve</button><button type="button" id="reject">Reject</button><button type="button" id="rescue">Rescue to review</button></div>
+          </form>
+        </section>
+      </section>
+      <aside class="review-column">
+        <section class="panel queue-panel" aria-labelledby="queue-heading">
+          <div class="section-heading"><h2 id="queue-heading">The short list</h2><span id="clip-count" class="count">0</span></div>
+          <div class="filter-bar" role="group" aria-label="Filter clips"><button data-filter="all" aria-pressed="true">All</button><button data-filter="pending" aria-pressed="false">Review</button><button data-filter="approved" aria-pressed="false">Approved</button><button data-filter="rejected" aria-pressed="false">Rejected</button></div>
+          <div id="clip-list"><p class="empty-list">Your moments will appear here. Add a manual cut or import a transcript to get started.</p></div>
+        </section>
+        <section class="panel export-panel" aria-labelledby="export-heading">
+          <p class="eyebrow">THE FINAL SAY IS YOURS</p><h2 id="export-heading">Review. Then render.</h2>
+          <p id="export-summary">Choose an approved clip to render a downloadable video.</p>
+          <button id="export" class="primary full" disabled>Render selected clip</button>
+          <button id="cancel-export" class="secondary full" hidden>Cancel render</button>
+          <progress id="export-progress" max="1" value="0" hidden aria-label="Render progress"></progress>
+          <p id="export-status" class="hint" role="status" aria-live="polite"></p>
+          <p id="export-capability" class="hint"></p>
+          <p class="hint">Original aspect ratio. No automatic reframing, captions, platform upload, or OBS control. Keep this tab visible while rendering.</p>
+        </section>
+        <section class="panel recovery-panel"><h2>Pick up where you left off</h2><p class="hint">This browser remembers the latest project’s notes, transcript, and decisions. Download a JSON backup before clearing browser data or changing devices.</p><label class="button secondary" for="project-import">Restore project JSON<input id="project-import" type="file" accept=".json,application/json" class="visually-hidden"></label><button id="clear-project" class="text-button">Clear this project</button></section>
+      </aside>
+    </div>
+    <footer>CHANNEL N9NE · PRODUCER STUDIO <span>VOD-first. Human-approved. Your files, your call.</span></footer>
+  </main>
+  </div>
+</body>
+</html>

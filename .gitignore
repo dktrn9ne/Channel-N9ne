@@ -2,3 +2,4 @@
 .env*.local
 .env
 streaming/recordings/
+node_modules/

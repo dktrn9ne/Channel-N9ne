@@ -176,6 +176,9 @@ export default async function handler(req, res) {
   if (req.method !== "GET") return send(res, 405, { error: "Method not allowed" });
   if (!hasValidSession(req, sessionSecret)) return send(res, 401, { error: "Authentication required" });
 
+  // Producer needs only session status, never stream credentials or analytics.
+  if (req.query?.session === "1") return send(res, 200, { authenticated: true });
+
   const selectedRange = ALLOWED_RANGES.has(req.query?.range) ? req.query.range : "24h";
   const rangeConfig = ALLOWED_RANGES.get(selectedRange);
   const streamId = process.env.PUBLIC_STREAM_ID || "n9ne";
