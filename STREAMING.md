@@ -44,10 +44,19 @@ PUBLIC_WEBRTC_URL=https://stream.channeln9ne.com:8889/n9ne
 
 Open `v2.html`. Safari uses native HLS; other modern browsers use hls.js. When no manifest is available, the player switches to an off-air state without breaking the rest of the page.
 
+## 4. Open Channel N9NE Studio
+
+Set `STUDIO_ADMIN_PASSWORD` and a random `STUDIO_SESSION_SECRET` of at least 32 bytes in Vercel. Then open:
+
+```text
+https://channeln9ne.xyz/studio.html
+```
+
+Studio creates an eight-hour, `HttpOnly`, `Secure`, `SameSite=Strict` session cookie after login. It provides OBS settings, stream status, live and peak audience, unique sessions, watch time, playback health, an audience timeline, and recent anonymous viewer sessions. The Supabase service-role key and publisher password remain server-side and are only returned by the authenticated Studio API.
+
 ## Operations
 
 - MediaMTX Prometheus metrics are available inside the host at `http://127.0.0.1:9998/metrics` when port 9998 is not publicly exposed.
 - Recordings are stored under `streaming/recordings` and expire after 30 days.
 - Keep RTMP port 1935 behind a firewall where possible. The publisher account is limited to the `n9ne` path.
 - Do not expose MediaMTX API or metrics ports publicly.
-
