@@ -337,7 +337,7 @@ body { min-height: 100vh; position: relative; }
 .live-player-wrapper {
   padding: 12px 14px 0;
 }
-.mux-player-container {
+.stream-player-container {
   width: 100%;
   aspect-ratio: 16/9;
   border-radius: 12px;
@@ -345,7 +345,21 @@ body { min-height: 100vh; position: relative; }
   background: rgba(0,0,0,0.4);
   border: 1px solid rgba(0, 229, 255, 0.35);
 }
-mux-player { width: 100%; height: 100%; }
+.stream-player-container video { width: 100%; height: 100%; display: block; background: #000; }
+.stream-offline {
+  display: none;
+  place-items: center;
+  min-height: 220px;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-soft);
+  background: radial-gradient(circle at center, rgba(0,229,255,.12), #02050a 72%);
+}
+.stream-offline.is-visible { display: grid; }
+.stream-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 0 16px 12px; }
+.stream-stat { padding: 9px 10px; border: 1px solid rgba(0,229,255,.2); background: rgba(2,8,16,.8); }
+.stream-stat strong { display: block; color: var(--accent); font-size: 1.05rem; }
+.stream-stat span { color: var(--text-soft); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
 
 .live-meta-row {
   padding: 10px 16px 12px;
@@ -480,8 +494,7 @@ mux-player { width: 100%; height: 100%; }
 </style>
 
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
-<link rel="preconnect" href="https://player.mux.com" crossorigin>
-<script defer src="https://unpkg.com/@mux/mux-player"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 </head>
 <body>
 <div class="star-layer" id="stars"></div>
@@ -606,22 +619,24 @@ mux-player { width: 100%; height: 100%; }
     <div id="live" class="card live-card" aria-label="Live stream and chat">
       <div class="live-top">
         <h2>Live Stream</h2>
-        <small>Mux‑powered live video. When you go live, Channel N9NE becomes a venue.</small>
+        <small>Independent RTMP ingest and low-latency HLS playback powered by MediaMTX.</small>
       </div>
       <div class="live-player-wrapper">
-        <div class="mux-player-container">
-          <mux-player
-            stream-type="live"
-            playback-id="Fl7MXxmxZz9NrkyXUUZAMnNSTS023JXzQfccTqnZ824Q"
-            primary-color="#00e5ff"
-            metadata-video-title="Live Stream"
-            autoplay muted>
-          </mux-player>
+        <div class="stream-player-container">
+          <video id="live-player" controls playsinline muted aria-label="Channel N9NE live stream"></video>
+          <div id="stream-offline" class="stream-offline" role="status">
+            <div><strong>Channel N9NE is off air.</strong><br>Stay close—the next transmission will appear here automatically.</div>
+          </div>
         </div>
       </div>
       <div class="live-meta-row">
-        <span class="live-pill">Live</span>
+        <span id="live-status" class="live-pill">Checking</span>
         <span style="font-size:0.85rem;color:var(--text-soft);">Stream whenever / wherever. This window is home base.</span>
+      </div>
+      <div class="stream-stats" aria-label="Live audience metrics">
+        <div class="stream-stat"><strong id="viewer-count">—</strong><span>Watching now</span></div>
+        <div class="stream-stat"><strong id="watch-minutes">—</strong><span>Minutes watched</span></div>
+        <div class="stream-stat"><strong id="playback-health">—</strong><span>Playback health</span></div>
       </div>
 
       <div class="chat-archive-row">
@@ -678,6 +693,106 @@ if (layer) {
     layer.appendChild(s);
   }
 }
+
+const analyticsState = {
+  sessionId: sessionStorage.getItem('n9ne_session') || crypto.randomUUID(),
+  streamId: 'n9ne',
+  startedAt: Date.now(),
+  lastPosition: 0,
+  bufferStartedAt: null,
+};
+sessionStorage.setItem('n9ne_session', analyticsState.sessionId);
+
+async function sendPlaybackEvent(eventType, details = {}) {
+  const payload = {
+    session_id: analyticsState.sessionId,
+    stream_id: analyticsState.streamId,
+    event_type: eventType,
+    playback_position: Number(document.getElementById('live-player')?.currentTime || 0),
+    occurred_at: new Date().toISOString(),
+    details,
+  };
+  try {
+    await fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: eventType === 'session_end',
+    });
+  } catch (_) { /* Analytics must never interrupt playback. */ }
+}
+
+async function refreshAudience() {
+  try {
+    const response = await fetch(`/api/analytics?stream_id=${encodeURIComponent(analyticsState.streamId)}`, { cache: 'no-store' });
+    if (!response.ok) return;
+    const data = await response.json();
+    document.getElementById('viewer-count').textContent = data.active_viewers ?? '—';
+    document.getElementById('watch-minutes').textContent = data.watch_minutes ?? '—';
+    document.getElementById('playback-health').textContent = data.playback_health ?? '—';
+  } catch (_) {}
+}
+
+async function initLiveStream() {
+  const player = document.getElementById('live-player');
+  const offline = document.getElementById('stream-offline');
+  const status = document.getElementById('live-status');
+  let config = { stream_id: 'n9ne', hls_url: 'http://localhost:8888/n9ne/index.m3u8' };
+  try {
+    const response = await fetch('/api/stream-config', { cache: 'no-store' });
+    if (response.ok) config = { ...config, ...(await response.json()) };
+  } catch (_) {}
+  analyticsState.streamId = config.stream_id || 'n9ne';
+
+  const online = () => {
+    offline.classList.remove('is-visible');
+    player.hidden = false;
+    status.textContent = 'Live';
+    sendPlaybackEvent('playback_ready');
+  };
+  const unavailable = () => {
+    player.hidden = true;
+    offline.classList.add('is-visible');
+    status.textContent = 'Off air';
+  };
+
+  player.addEventListener('playing', () => { online(); sendPlaybackEvent('play'); });
+  player.addEventListener('pause', () => sendPlaybackEvent('pause'));
+  player.addEventListener('waiting', () => { analyticsState.bufferStartedAt = Date.now(); sendPlaybackEvent('buffer_start'); });
+  player.addEventListener('playing', () => {
+    if (analyticsState.bufferStartedAt) {
+      sendPlaybackEvent('buffer_end', { duration_ms: Date.now() - analyticsState.bufferStartedAt });
+      analyticsState.bufferStartedAt = null;
+    }
+  });
+  player.addEventListener('error', () => sendPlaybackEvent('playback_error', { code: player.error?.code || 0 }));
+
+  if (player.canPlayType('application/vnd.apple.mpegurl')) {
+    player.src = config.hls_url;
+  } else if (window.Hls?.isSupported()) {
+    const hls = new Hls({ lowLatencyMode: true, backBufferLength: 30 });
+    hls.loadSource(config.hls_url);
+    hls.attachMedia(player);
+    hls.on(Hls.Events.MANIFEST_PARSED, online);
+    hls.on(Hls.Events.ERROR, (_event, data) => {
+      sendPlaybackEvent('playback_error', { type: data.type, details: data.details, fatal: data.fatal });
+      if (data.fatal) unavailable();
+    });
+  } else {
+    unavailable();
+  }
+
+  sendPlaybackEvent('session_start');
+  setInterval(() => {
+    if (!document.hidden && !player.paused) sendPlaybackEvent('heartbeat');
+  }, 15000);
+  setInterval(refreshAudience, 15000);
+  refreshAudience();
+}
+
+window.addEventListener('load', initLiveStream);
+window.addEventListener('pagehide', () => sendPlaybackEvent('session_end', { duration_ms: Date.now() - analyticsState.startedAt }));
 </script>
 </body>
 </html>
+
